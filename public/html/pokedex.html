@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../css/style.css" rel="stylesheet" />
+    <link href="../css/color.css" rel="stylesheet" />
+    <title>Pokedex</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/luxury-ball.png"
+    />
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-left">
+        <a href="index.html">
+          <img id="logo" class="logo" alt="Logo" />
+        </a>
+        <a href="index.html">Home</a>
+        <a href="users.html">Users</a>
+        <a href="pokedex.html" class="active">Pokedex</a>
+        <a href="pokemon.html">Pokemon</a>
+        <a href="team.html">Team</a>
+        <a href="gym.html">Gyms</a>
+        <a href="badges.html">Badges</a>
+        <a href="shop.html">Shop</a>
+      </div>
+      <div class="navbar-right">
+        <a id="profileButton" href="profile.html" class="d-none">Profile</a>
+        <a id="logoutButton" href="#" class="d-none">Logout</a>
+        <a id="loginButton" href="login.html">Login</a>
+        <a id="registerButton" href="register.html" class="register"
+          >Register</a
+        >
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+      <div class="container">
+        <h1 class="text-center">Pokedex</h1>
+
+        <!-- View toggle (hidden by default, shown only if logged in) -->
+        <div id="filterContainer" class="text-center mb-3 d-none">
+          <label for="filterToggle"><strong>View:</strong></label>
+          <select id="filterToggle">
+            <option value="user">My Pokedex</option>
+            <option value="global">Global Pokedex</option>
+          </select>
+        </div>
+
+        <!-- Unified filter options (apply to both views) -->
+        <div id="filterOptions" class="text-center mb-3">
+          <label for="typeFilter"><strong>Type:</strong></label>
+          <select id="typeFilter">
+            <option value="">Any</option>
+            <option value="fire">Fire</option>
+            <option value="water">Water</option>
+            <option value="electric">Electric</option>
+            <option value="grass">Grass</option>
+            <option value="poison">Poison</option>
+            <option value="psychic">Psychic</option>
+            <option value="fighting">Fighting</option>
+            <option value="rock">Rock</option>
+            <option value="ground">Ground</option>
+            <option value="ice">Ice</option>
+            <option value="dragon">Dragon</option>
+            <option value="dark">Dark</option>
+            <option value="ghost">Ghost</option>
+            <option value="bug">Bug</option>
+            <option value="normal">Normal</option>
+            <option value="fairy">Fairy</option>
+            <option value="steel">Steel</option>
+            <option value="flying">Flying</option>
+          </select>
+
+          <label for="rarityFilter"><strong>Rarity:</strong></label>
+          <select id="rarityFilter">
+            <option value="">Any</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="ultra">Ultra</option>
+            <option value="legendary">Legendary</option>
+          </select>
+
+          <button id="applyFilter">Apply Filter</button>
+        </div>
+
+        <div id="pokemonList" class="row"></div>
+      </div>
+    </main>
+
+    <!-- Project JS -->
+    <script src="../js/queryCmds.js"></script>
+    <script src="../js/getCurrentURL.js"></script>
+    <script src="../js/userNavbarToggle.js"></script>
+    <script src="../images/itemSprites.js"></script>
+    <script src="../images/pokemonSprites.js"></script>
+    <script src="../js/showAllPokedex.js"></script>
+
+    <!-- Inject logo using sprite function -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const logo = document.getElementById("logo");
+        if (logo && typeof getBallSprite === "function") {
+          logo.src = getBallSprite("premier");
+        }
+      });
+    </script>
+  </body>
+</html>

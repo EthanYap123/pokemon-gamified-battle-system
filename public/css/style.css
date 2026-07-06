@@ -1,0 +1,687 @@
+/* =========================
+   Global Layout + Typography
+   ========================= */
+body {
+  background-color: var(--custom-color-light);
+  color: #1a1a1a;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding-top: 60px; /* offset for fixed navbar */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: var(--custom-color-darker);
+  margin: 0.5em 0;
+}
+
+.d-none {
+  display: none !important;
+}
+
+/* =========================
+   Navbar
+   ========================= */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--custom-color);
+  padding: 0.5rem 1rem;
+  color: var(--custom-text-color);
+  z-index: 1000;
+}
+
+.navbar-left,
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navbar-left {
+  margin-left: 40px;
+}
+.navbar-right {
+  margin-right: 40px;
+}
+
+.navbar-left .logo {
+  height: 40px;
+  width: auto;
+  cursor: pointer;
+}
+
+.navbar a {
+  color: var(--custom-text-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.navbar a.active,
+.navbar a:hover {
+  color: var(--custom-color-light);
+  font-weight: bold;
+}
+
+.navbar-right .register {
+  background-color: var(--custom-color-light);
+  color: #1a1a1a;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* =========================
+   Utility Layout
+   ========================= */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+main {
+  padding: 20px 0;
+}
+
+/* =========================
+   Forms & Auth
+   ========================= */
+.auth-card.centered {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: var(--custom-color-light);
+  border: 1px solid var(--custom-color);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.auth-form .form-group {
+  margin-bottom: 15px;
+}
+
+.auth-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+button,
+.btn-primary,
+.btn-buy {
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--custom-color);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: var(--custom-color-dark);
+}
+
+.btn-buy {
+  background-color: var(--custom-color);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-buy:hover {
+  background-color: var(--custom-color-dark);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.remove-btn {
+  background-color: #f44336;
+  color: #fff;
+  padding: 6px 12px;
+}
+
+.remove-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* =========================
+   Cards (Pokémon, Users, Shop, Team, Gyms)
+   ========================= */
+.pokemon-card,
+.user-card,
+.shop-card,
+.owned-card,
+.team-slot {
+  background-color: var(--custom-color-light);
+  border: 1px solid var(--custom-color);
+  border-radius: 12px;
+  text-align: center;
+  color: #1a1a1a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.pokemon-card:hover,
+.user-card:hover,
+.shop-card:hover,
+.owned-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.pokemon-card,
+.user-card,
+.shop-card {
+  padding: 20px;
+  margin: 10px;
+}
+
+.pokemon-card img,
+.user-card img,
+.shop-card img,
+.owned-card img {
+  max-width: 100px;
+  margin-bottom: 12px;
+  object-fit: contain;
+}
+
+.pokemon-card h5,
+.user-card h5,
+.shop-card h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--custom-color-dark);
+}
+
+.pokemon-card p,
+.user-card p,
+.shop-card p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+/* Team grid */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.team-slot {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 120px;
+  background-color: #f9f9f9;
+}
+
+.team-slot.filled {
+  border: 2px solid #4caf50;
+  background-color: #e8ffe8;
+}
+
+.team-slot img {
+  max-width: 80px;
+  display: block;
+  margin: 0 auto 0.5rem;
+}
+
+.add-label {
+  display: block;
+  margin-top: 5px;
+  font-style: italic;
+  color: #888;
+}
+
+/* Owned Pokémon list */
+.owned-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.owned-card {
+  padding: 0.5rem;
+  width: 120px;
+  background-color: #fff;
+}
+
+.gym-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+.gym-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  background-color: #fff;
+}
+.gym-card.locked {
+  opacity: 0.5;
+}
+.gym-card img {
+  max-width: 100px;
+  margin-bottom: 10px;
+}
+.gym-card button {
+  margin-top: 10px;
+}
+
+.battle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Battle cards for each side */
+.battle-card {
+  background: #fff;
+  border: 2px solid #333;
+  border-radius: 12px;
+  width: 300px;
+  padding: 15px;
+  margin: 10px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.battle-card h3 {
+  margin: 5px 0;
+  font-size: 1.2em;
+}
+
+.battle-card img {
+  width: 96px;
+  height: 96px;
+  margin: 5px;
+}
+
+/* HP bar */
+.hp-bar {
+  background: #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 12px;
+  margin: 8px 0;
+}
+
+.hp-fill {
+  background: #4caf50;
+  height: 100%;
+  width: 100%; /* dynamically set via JS */
+  transition: width 0.3s ease;
+}
+
+/* Move buttons */
+.moves {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.move-btn {
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.move-btn:hover {
+  background: #1976d2;
+}
+
+/* Battle log */
+.battle-log {
+  background: #fafafa;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 600px;
+  height: 150px;
+  overflow-y: auto;
+  padding: 10px;
+  margin-top: 20px;
+  font-size: 0.9em;
+}
+
+/* Surrender button */
+#surrenderBtn {
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  margin-top: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#surrenderBtn:hover {
+  background: #c62828;
+}
+
+.popup {
+  display: none; /* hidden until JS sets display:flex */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.popup-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.popup-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.popup-body {
+  margin-bottom: 15px;
+}
+
+.popup-sprite {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 10px;
+}
+
+.popup-footer {
+  text-align: center;
+}
+/* =========================
+   Rarity Colors
+   ========================= */
+.rarity-common {
+  color: gray;
+}
+.rarity-uncommon {
+  color: green;
+}
+.rarity-rare {
+  color: blue;
+}
+.rarity-ultra {
+  color: purple;
+}
+.rarity-legendary {
+  color: gold;
+}
+
+/* =========================
+   Type Badges
+   ========================= */
+.type-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  margin: 2px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.type-normal {
+  background-color: #a8a878;
+}
+.type-fire {
+  background-color: #f08030;
+}
+.type-water {
+  background-color: #6890f0;
+}
+.type-electric {
+  background-color: #f8d030;
+}
+.type-grass {
+  background-color: #78c850;
+}
+.type-ice {
+  background-color: #98d8d8;
+}
+.type-fighting {
+  background-color: #c03028;
+}
+.type-poison {
+  background-color: #a040a0;
+}
+.type-ground {
+  background-color: #e0c068;
+}
+.type-flying {
+  background-color: #a890f0;
+}
+.type-psychic {
+  background-color: #f85888;
+}
+.type-bug {
+  background-color: #a8b820;
+}
+.type-rock {
+  background-color: #b8a038;
+}
+.type-ghost {
+  background-color: #705898;
+}
+.type-dragon {
+  background-color: #7038f8;
+}
+.type-dark {
+  background-color: #705848;
+}
+.type-steel {
+  background-color: #b8b8d0;
+}
+.type-fairy {
+  background-color: #ee99ac;
+}
+
+.greyed-out {
+  filter: grayscale(100%) brightness(50%);
+}
+
+/* =========================
+   Modals
+   ========================= */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.modal-content button {
+  margin: 0.5rem;
+  background: #2196f3;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+.modal-content button:hover {
+  background: #1976d2;
+}
+
+/* =========================
+   Feedback & Error Boxes
+   ========================= */
+.error-box {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f44336;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+}
+
+.feedback-box {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.feedback-box.error {
+  background-color: #f44336;
+  color: #fff;
+}
+.feedback-box.success {
+  background-color: #4caf50;
+  color: #fff;
+}
+.feedback-box.fade-out {
+  opacity: 0;
+}
+
+/* =========================
+   Gacha Popup
+   ========================= */
+.gacha-popup {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 2px solid #444;
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.gacha-card img {
+  max-width: 120px;
+  margin-bottom: 10px;
+}
+
+/* =========================
+   Accordion
+   ========================= */
+.accordion-button {
+  background-color: var(--custom-color-light);
+  color: var(--custom-color-darker);
+}
+
+/* =========================
+   Miscellaneous
+   ========================= */
+.greyed-out {
+  filter: grayscale(100%) brightness(50%);
+}

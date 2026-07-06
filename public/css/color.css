@@ -1,0 +1,38 @@
+:root {
+    --custom-color: #4da6ff;
+    --custom-color-darker: #1e90ff;
+    --custom-color-light: #b3d9ff;
+    --custom-color-rgb: 77, 166, 255;
+    --custom-color-light-rgb: 179, 217, 255;
+    --custom-text-color: #ffffff;
+}
+
+/* Bootstrap overrides using theme variables */
+.btn-primary {
+    --bs-btn-bg: var(--custom-color);
+    --bs-btn-border-color: var(--custom-color);
+    --bs-btn-hover-bg: var(--custom-color-darker);
+    --bs-btn-hover-border-color: var(--custom-color-darker);
+    --bs-btn-active-bg: var(--custom-color-light);
+    --bs-btn-active-border-color: var(--custom-color-light);
+    --bs-btn-disabled-bg: #cccccc;
+    --bs-btn-disabled-border-color: #cccccc;
+    color: var(--custom-text-color);
+}
+
+.bg-primary {
+    --bs-bg-opacity: 1;
+    background-color: rgba(var(--custom-color-rgb), var(--bs-bg-opacity)) !important;
+    color: var(--custom-text-color);
+}
+
+.form-check-input:checked {
+    background-color: var(--custom-color);
+    border-color: var(--custom-color);
+}
+
+.form-control:focus,
+.form-check-input:focus {
+    border-color: rgba(var(--custom-color-light-rgb), 0.8);
+    box-shadow: 0 0 0 4px rgba(var(--custom-color-light-rgb), 0.6);
+}
