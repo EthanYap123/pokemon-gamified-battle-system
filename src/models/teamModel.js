@@ -119,16 +119,22 @@ module.exports.removePokemonFromTeam = (data, callback) => {
     });
 };
 
-// 6. Reorder Team
+// 6. Reorder Team (also used to swap a new Pokémon in). Every ID must belong to the user.
 module.exports.reorderTeam = (data, callback) => {
     const { user_id, order } = data;
 
-    const SQL1 = `DELETE FROM Team WHERE user_id = ?;`;
-    pool.query(SQL1, [user_id], (err1) => {
-        if (err1) return callback(err1);
+    const SQL0 = `SELECT COUNT(*) AS owned FROM UserPokemon WHERE user_id = ? AND id IN (?);`;
+    pool.query(SQL0, [user_id, order], (err0, results0) => {
+        if (err0) return callback(err0);
+        if (results0[0].owned !== order.length) return callback({ code: "NOT_OWNED" });
 
-        let values = order.map((userPokemonId, index) => [user_id, index + 1, userPokemonId]);
-        const SQL2 = `INSERT INTO Team (user_id, slot, user_pokemon_id) VALUES ?;`;
-        pool.query(SQL2, [values], callback);
+        const SQL1 = `DELETE FROM Team WHERE user_id = ?;`;
+        pool.query(SQL1, [user_id], (err1) => {
+            if (err1) return callback(err1);
+
+            let values = order.map((userPokemonId, index) => [user_id, index + 1, userPokemonId]);
+            const SQL2 = `INSERT INTO Team (user_id, slot, user_pokemon_id) VALUES ?;`;
+            pool.query(SQL2, [values], callback);
+        });
     });
 };

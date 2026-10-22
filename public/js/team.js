@@ -136,18 +136,62 @@ function renderTeam(team) {
     if (lastOwnedList) renderOwned(lastOwnedList);
 }
 
+const RARITY_RANK = { common: 0, uncommon: 1, rare: 2, ultra: 3, legendary: 4 };
+
+// Fill the type dropdown with the types the player actually owns
+function fillTypeFilter(pokemonList) {
+    const select = document.getElementById("ownedType");
+    if (!select) return;
+    const current = select.value;
+    const types = [...new Set(pokemonList.flatMap(p => [p.type1, p.type2]).filter(Boolean))].sort();
+    select.innerHTML = `<option value="">Any</option>` +
+        types.map(t => `<option value="${escapeHTML(t)}">${escapeHTML(t.charAt(0).toUpperCase() + t.slice(1))}</option>`).join("");
+    if (types.includes(current)) select.value = current;
+}
+
+// Apply search, rarity, type, "hide team" and sort to the owned list
+function filterOwned(pokemonList) {
+    const query = (document.getElementById("ownedSearch")?.value || "").trim().toLowerCase();
+    const rarity = document.getElementById("ownedRarity")?.value || "";
+    const type = document.getElementById("ownedType")?.value || "";
+    const sort = document.getElementById("ownedSort")?.value || "newest";
+    const hideTeam = document.getElementById("ownedHideTeam")?.checked;
+
+    const result = pokemonList.filter(p =>
+        (!query || normalizeName(p.name).toLowerCase().includes(query)) &&
+        (!rarity || p.rarity === rarity) &&
+        (!type || p.type1 === type || p.type2 === type) &&
+        (!hideTeam || !teamUserPokemonIds.has(p.id))
+    );
+
+    const sorters = {
+        newest: (a, b) => b.id - a.id,
+        oldest: (a, b) => a.id - b.id,
+        rarity: (a, b) => (RARITY_RANK[b.rarity] ?? 0) - (RARITY_RANK[a.rarity] ?? 0) || a.pokemon_id - b.pokemon_id,
+        dex: (a, b) => a.pokemon_id - b.pokemon_id || a.id - b.id,
+        name: (a, b) => normalizeName(a.name).localeCompare(normalizeName(b.name)),
+    };
+    return result.sort(sorters[sort] || sorters.newest);
+}
+
 // Render owned Pokémon list
 function renderOwned(pokemonList) {
     const list = document.getElementById("ownedList");
     if (!list) return;
 
+    if (pokemonList !== lastOwnedList) fillTypeFilter(pokemonList);
     lastOwnedList = pokemonList;
     if (list.dataset.rendered) list.classList.add("no-anim");
     list.dataset.rendered = "true";
     list.innerHTML = "";
 
+    const shownList = filterOwned(pokemonList);
     const count = document.getElementById("ownedCount");
-    if (count) count.textContent = `${pokemonList.length} caught`;
+    if (count) {
+        count.textContent = shownList.length === pokemonList.length
+            ? `${pokemonList.length} caught`
+            : `${shownList.length} of ${pokemonList.length} shown`;
+    }
 
     if (pokemonList.length === 0) {
         list.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1">
@@ -156,7 +200,12 @@ function renderOwned(pokemonList) {
         return;
     }
 
-    pokemonList.forEach(p => {
+    if (shownList.length === 0) {
+        list.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1">No Pokémon match these filters.</div>`;
+        return;
+    }
+
+    shownList.forEach(p => {
         const card = document.createElement("div");
         card.className = "owned-card rarity-" + p.rarity;
 
@@ -184,8 +233,12 @@ function renderOwned(pokemonList) {
         card.innerHTML = `
             <img src="${spritePath}" alt="${escapeHTML(displayName)}" loading="lazy" />
             <h5>${escapeHTML(displayName)}</h5>
+            <div class="owned-types">
+                <span class="type-badge type-${escapeHTML(p.type1)}">${escapeHTML(p.type1)}</span>
+                ${p.type2 ? `<span class="type-badge type-${escapeHTML(p.type2)}">${escapeHTML(p.type2)}</span>` : ""}
+            </div>
             <span class="rarity-pill rarity-${escapeHTML(p.rarity)}">${escapeHTML(p.rarity)}</span>
-            <button data-id="${p.id}" class="add-team-btn" ${inTeam ? "disabled" : ""}>${inTeam ? "✓ In team" : "Add to Team"}</button>
+            <button data-id="${p.id}" class="add-team-btn" ${inTeam ? "disabled" : ""}>${inTeam ? "✓ In team" : currentTeam.length >= 6 ? "Swap into team" : "Add to Team"}</button>
         `;
 
         list.appendChild(card);
@@ -220,7 +273,60 @@ function getOwned(userId) {
     }, "GET", null);
 }
 
+// Team is full: ask which member the new Pokémon should replace
+function openReplaceModal(userPokemonId) {
+    const incoming = (lastOwnedList || []).find(p => String(p.id) === String(userPokemonId));
+    if (!incoming) return;
+    const incomingName = normalizeName(incoming.name);
+    const modal = document.getElementById("replaceModal");
+    const grid = document.getElementById("replaceGrid");
+
+    document.getElementById("replaceText").innerHTML =
+        `Pick a Pokémon for <strong>${escapeHTML(incomingName)}</strong> to replace. The replaced one stays in your collection.`;
+
+    const ordered = [...currentTeam].sort((a, b) => a.slot - b.slot);
+    grid.innerHTML = ordered.map(member => {
+        const name = normalizeName(idToNameMap[member.pokemon_id]);
+        return `
+            <button class="replace-option" data-slot="${member.slot}">
+                <span class="slot-no">${member.slot}</span>
+                <img src="${getPokemonSprite(member.pokemon_id)}" alt="">
+                <span>${escapeHTML(name)}</span>
+            </button>`;
+    }).join("");
+
+    grid.querySelectorAll(".replace-option").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const slot = parseInt(btn.dataset.slot, 10);
+            const replaced = ordered.find(m => m.slot === slot);
+            const order = ordered.map(m => (m.slot === slot ? Number(userPokemonId) : m.user_pokemon_id));
+            closeReplaceModal();
+
+            const userId = localStorage.getItem("userId");
+            fetchMethod(currentUrl + `/api/team/${userId}/reorder`, function (status, data) {
+                if (status === 200) {
+                    showToast(`${incomingName} replaced ${normalizeName(idToNameMap[replaced.pokemon_id])}!`);
+                } else {
+                    showToast(data?.message || "Could not swap that Pokémon in.", "error");
+                }
+                getTeam(userId);
+            }, "PUT", { order });
+        });
+    });
+
+    modal.style.display = "flex";
+    grid.querySelector("button")?.focus();
+}
+
+function closeReplaceModal() {
+    document.getElementById("replaceModal").style.display = "none";
+}
+
 function addPokemon(userPokemonId) {
+    if (currentTeam.length >= 6) {
+        openReplaceModal(userPokemonId);
+        return;
+    }
     const userId = localStorage.getItem("userId");
     fetchMethod(currentUrl + `/api/team/${userId}/add`, function (status, data) {
         if (status === 200 || status === 201) {
@@ -291,4 +397,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     getTeam(userId);
     getOwned(userId);
+
+    // Owned list filters
+    ["ownedSearch", "ownedRarity", "ownedType", "ownedSort", "ownedHideTeam"].forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener(el.tagName === "INPUT" && el.type === "search" ? "input" : "change", () => {
+            if (lastOwnedList) renderOwned(lastOwnedList);
+        });
+    });
+
+    // Replace popup
+    document.getElementById("replaceClose").addEventListener("click", closeReplaceModal);
+    document.getElementById("replaceModal").addEventListener("click", e => {
+        if (e.target.id === "replaceModal") closeReplaceModal();
+    });
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") closeReplaceModal();
+    });
 });

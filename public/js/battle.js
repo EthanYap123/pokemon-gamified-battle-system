@@ -287,6 +287,8 @@ function sendAction(body) {
 
     fetchMethod(currentUrl + `/api/battle/${battleId}/turn`, async (status, data) => {
         if (status === 200) {
+            // After choosing a Pokémon, go straight back to picking moves
+            if (body.action === "switch") partyOpen = false;
             await playEvents(data.events || [], data.state);
             renderBattleState(data.state, data.result);
             if (data.result === "win") {
