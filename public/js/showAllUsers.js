@@ -1,6 +1,4 @@
 const callback = (responseStatus, responseData) => {
-    console.log("responseStatus:", responseStatus);
-    console.log("responseData:", responseData);
 
     const userList = document.getElementById("userList");
     if (!userList) return;
@@ -16,17 +14,26 @@ const callback = (responseStatus, responseData) => {
         return;
     }
 
+    const currentUserId = localStorage.getItem("userId");
+
     // Render each User card
     responseData.forEach((user) => {
         const displayItem = document.createElement("div");
-        displayItem.className = "col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12";
+        const isMe = String(user.user_id) === currentUserId;
 
         displayItem.innerHTML = `
     <div class="user-card">
-      <h5>${user.username}</h5>
-      <p>User ID: ${user.user_id}</p>
-      <p>Coins: ${user.coins}</p>
-      <p>Amulet Coins: ${user.amulet_coins}</p>
+      <div class="user-head">
+        <div class="avatar">${escapeHTML(String(user.username).charAt(0))}</div>
+        <div>
+          <h5>${escapeHTML(user.username)}${isMe ? ' <span class="chip brand" style="padding:1px 7px">You</span>' : ""}</h5>
+          <div class="user-id">Trainer #${user.user_id}</div>
+        </div>
+      </div>
+      <div class="stat-chips">
+        <span class="chip gold">💰 ${Number(user.coins).toLocaleString()}</span>
+        <span class="chip" tabindex="0" data-tip="${escapeHTML(itemInfo("Amulet Coin"))}"><img src="${getItemSprite("amulet-coin")}" alt="Amulet Coins">${user.amulet_coins} Amulet</span>
+      </div>
     </div>
   `;
 

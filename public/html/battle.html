@@ -2,11 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
     <link href="../css/style.css" rel="stylesheet" />
     <link href="../css/color.css" rel="stylesheet" />
-    <title>Battle</title>
+    <title>Battle · PokéBattle</title>
     <link
       rel="icon"
       type="image/png"
@@ -18,7 +20,8 @@
     <nav class="navbar">
       <div class="navbar-left">
         <a href="index.html">
-          <img id="logo" class="logo" alt="Logo" />
+          <img id="logo" class="logo" alt="" />
+          <span class="brand-name">PokéBattle</span>
         </a>
         <a href="index.html">Home</a>
         <a href="users.html">Users</a>
@@ -42,34 +45,50 @@
     <!-- Main Content -->
     <main>
       <div class="container">
-        <h1 class="text-center">Battle</h1>
-
         <!-- Battle UI -->
         <div class="battle-container">
-          <!-- Opponent -->
-          <div class="battle-card" id="opponentCard">
-            <h3 id="opponentName">Gym Leader</h3>
-            <img id="opponentSprite" src="" alt="Opponent" />
-            <div class="hp-bar">
-              <div class="hp-fill" id="opponentHp"></div>
+          <div class="arena" id="arena">
+            <img id="leaderSprite" class="leader-sprite d-none" alt="" />
+
+            <!-- Opponent -->
+            <div class="battle-card" id="opponentCard">
+              <div class="info-box">
+                <h3><span id="opponentPokemonName">—</span><span class="leader-label" id="opponentName">Gym Leader</span></h3>
+                <div class="team-dots" id="opponentDots"></div>
+                <div class="hp-row">HP<div class="hp-bar"><div class="hp-fill" id="opponentHp"></div></div></div>
+              </div>
+            </div>
+            <img id="opponentSprite" class="battle-sprite" src="" alt="Opponent" />
+
+            <!-- User -->
+            <img id="userSprite" class="battle-sprite" src="" alt="Your Pokémon" />
+            <div class="battle-card" id="userCard">
+              <div class="info-box">
+                <h3><span id="userPokemonName">—</span><span class="leader-label">You</span></h3>
+                <div class="team-dots" id="userDots"></div>
+                <div class="hp-row">HP<div class="hp-bar"><div class="hp-fill" id="userHp"></div></div></div>
+                <div class="hp-text" id="userHpText"></div>
+              </div>
+            </div>
+
+            <div class="battle-loading" id="battleLoading">
+              <div><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="" />Starting battle...</div>
             </div>
           </div>
 
-          <!-- User -->
-          <div class="battle-card" id="userCard">
-            <h3>Your Pokémon</h3>
-            <img id="userSprite" src="" alt="Your Pokémon" />
-            <div class="hp-bar"><div class="hp-fill" id="userHp"></div></div>
-            <div class="moves" id="moveButtons">
-              <!-- Move buttons injected dynamically -->
+          <div class="battle-console">
+            <!-- Battle log -->
+            <div class="battle-log" id="battleLog" aria-live="polite"></div>
+
+            <!-- Controls -->
+            <div class="battle-actions">
+              <span class="label">Choose a move</span>
+              <div class="moves" id="moveButtons">
+                <!-- Move buttons injected dynamically -->
+              </div>
+              <button id="surrenderBtn">Surrender</button>
             </div>
           </div>
-
-          <!-- Battle log -->
-          <div class="battle-log" id="battleLog"></div>
-
-          <!-- Controls -->
-          <button id="surrenderBtn">Surrender</button>
         </div>
       </div>
     </main>
@@ -77,9 +96,10 @@
     <!-- Popup for battle results -->
     <div id="battlePopup" class="popup">
       <div class="popup-content">
-        <h2 id="popupResult">DEBUG: Waiting for result</h2>
-        <p id="popupRewards">DEBUG: Waiting for rewards</p>
-        <button id="popupCloseBtn">Close</button>
+        <img id="popupIcon" class="result-icon" alt="" />
+        <h2 id="popupResult"></h2>
+        <div id="popupRewards"></div>
+        <button id="popupCloseBtn">Back to Gyms</button>
       </div>
     </div>
 

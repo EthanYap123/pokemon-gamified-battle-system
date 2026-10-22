@@ -1,31 +1,24 @@
 // Utility: feedback popups
 function showErrorBox(message) {
-    const box = document.createElement("div");
-    box.className = "feedback-box error";
-    box.innerText = message;
-    document.body.appendChild(box);
-    setTimeout(() => box.remove(), 3000);
+    showToast(message, "error");
 }
 
 function showSuccessBox(message) {
-    const box = document.createElement("div");
-    box.className = "feedback-box success";
-    box.innerText = message;
-    document.body.appendChild(box);
-    setTimeout(() => box.remove(), 3000);
+    showToast(message, "success");
 }
 
 // Initialize global variables
 let userCoins = 0;
 let userAmuletCoins = 0;
+let buying = false;
 
 // Render balance in DOM
 function renderBalance() {
     const balanceEl = document.getElementById("userBalance");
     if (balanceEl) {
         balanceEl.innerHTML = `
-            <p>💰 Coins: ${userCoins}</p>
-            <p>🪙 Amulet Coins: ${userAmuletCoins}</p>
+            <span class="chip gold">💰 Coins <b>${Number(userCoins).toLocaleString()}</b></span>
+            <span class="chip tip-below" tabindex="0" data-tip="${escapeHTML(itemInfo("Amulet Coin"))} You have +${Math.min(userAmuletCoins, 10) * 10}% right now."><img src="${getItemSprite("amulet-coin")}" alt="">Amulet Coins <b>${userAmuletCoins}/10</b><i class="info-dot">i</i></span>
         `;
     }
 }
@@ -33,16 +26,36 @@ function renderBalance() {
 // Load balance from backend using GET by id
 function loadUserBalance() {
     const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    if (!userId) {
+        const balanceEl = document.getElementById("userBalance");
+        if (balanceEl) {
+            balanceEl.innerHTML = `<span class="chip"><a href="login.html">Log in</a>&nbsp;to buy items</span>`;
+        }
+        return;
+    }
 
     fetchMethod(currentUrl + `/api/users/${userId}`, (status, data) => {
-        console.log("DEBUG user balance:", status, data);
         if (status === 200 && data) {
             userCoins = data.coins;
             userAmuletCoins = data.amulet_coins;
             renderBalance();
         }
     });
+}
+
+// Odds bar for the ball items (read from the item's effect text)
+function oddsBar(effect) {
+    const colours = {
+        common: "var(--rarity-common)",
+        uncommon: "var(--rarity-uncommon)",
+        rare: "var(--rarity-rare)",
+        ultrarare: "var(--rarity-ultra)",
+    };
+    const parts = [...String(effect).matchAll(/(\d+)%\s*(common|uncommon|rare|ultraRare)/gi)];
+    if (parts.length === 0) return "";
+    return `<div class="odds" title="${escapeHTML(effect)}">${parts
+        .map(([, pct, rarity]) => `<span style="width:${pct}%;background:${colours[rarity.toLowerCase()]}"></span>`)
+        .join("")}</div>`;
 }
 
 // Rendering shop items
@@ -61,7 +74,6 @@ const callback = (responseStatus, responseData) => {
 
     responseData.forEach((shop) => {
         const displayItem = document.createElement("div");
-        displayItem.className = "col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12";
 
         let spriteURL = "";
         if (shop.item_id >= 1 && shop.item_id <= 3) {
@@ -77,11 +89,13 @@ const callback = (responseStatus, responseData) => {
 
         displayItem.innerHTML = `
           <div class="shop-card">
-            <img src="${spriteURL}" alt="Sprite of ${shop.item_name}">
-            <h5>${shop.item_name}</h5>
-            <p>Item ID: ${shop.item_id}</p>
-            <p>Price: ${shop.price}</p>
-            <p>${shop.effect}</p>
+            <span class="item-icon" tabindex="0" data-tip="${escapeHTML(itemInfo(shop.item_name) || shop.effect)}">
+              <img src="${spriteURL}" alt="Sprite of ${escapeHTML(shop.item_name)}">
+            </span>
+            <h5>${escapeHTML(shop.item_name)}<i class="info-dot" tabindex="0" data-tip="${escapeHTML(itemInfo(shop.item_name) || shop.effect)}">i</i></h5>
+            <div class="price">💰 ${Number(shop.price).toLocaleString()}</div>
+            ${oddsBar(shop.effect)}
+            <p class="effect">${escapeHTML(shop.effect)}</p>
             <button class="btn-buy" data-itemid="${shop.item_id}">Buy</button>
           </div>
         `;
@@ -91,15 +105,57 @@ const callback = (responseStatus, responseData) => {
 
 fetchMethod(currentUrl + "/api/shop/items", callback);
 
+// Gacha reveal: the ball wobbles, then the Pokémon pops out
+function showGachaReveal(ballSprite, awarded, responseData) {
+    const popup = document.createElement("div");
+    popup.className = "gacha-popup";
+    popup.innerHTML = `
+        <div class="gacha-card rarity-${escapeHTML(awarded.rarity)}">
+          <img class="gacha-ball" src="${ballSprite}" alt="">
+        </div>
+    `;
+    document.body.appendChild(popup);
+
+    const card = popup.querySelector(".gacha-card");
+    setTimeout(() => {
+        const name = displayPokemonName(awarded.name);
+        const note = responseData.duplicate
+            ? `<p>Already caught! Refunded 💰 ${responseData.refund}</p>`
+            : `<p>New Pokémon added to your collection!</p>`;
+        card.classList.add("revealed");
+        card.innerHTML = `
+          <img class="gacha-mon" src="${getPokemonSprite(awarded.pokemon_id)}" alt="${escapeHTML(name)}">
+          <h5>${escapeHTML(name)}</h5>
+          <span class="rarity-pill rarity-${escapeHTML(awarded.rarity)}">${escapeHTML(awarded.rarity === "ultraRare" ? "ultra rare" : awarded.rarity)}</span>
+          ${note}
+          <div class="tap-hint">Tap anywhere to continue</div>
+        `;
+        popup.addEventListener("click", () => popup.remove());
+    }, 1800);
+}
+
 // Buy button logic
 document.addEventListener("click", function (event) {
-    if (event.target.classList.contains("btn-buy")) {
-        const itemId = event.target.getAttribute("data-itemid");
+    const button = event.target.closest(".btn-buy");
+    if (button && button.dataset.itemid) {
+        if (buying) return;
+        const itemId = button.getAttribute("data-itemid");
         const userId = localStorage.getItem("userId");
+        const ballSprite = button.closest(".shop-card").querySelector("img").src;
+
+        if (!userId) {
+            showErrorBox("Please Login or Register to purchase items");
+            return;
+        }
 
         const data = { item_id: itemId };
+        buying = true;
+        button.disabled = true;
 
         const purchaseCallback = (responseStatus, responseData) => {
+            buying = false;
+            button.disabled = false;
+
             if (responseStatus === 403 && responseData?.message?.includes("Amulet coin limit reached")) {
                 showErrorBox("🪙 You already have the max 10 Amulet Coins!");
                 return;
@@ -116,34 +172,23 @@ document.addEventListener("click", function (event) {
 
                 renderBalance(); // refresh display
 
-                // Existing popup logic
                 const awarded = responseData.pokemon_awarded;
                 if (awarded) {
-                    const spriteURL = getPokemonSprite(awarded.pokemon_id);
-                    const popup = document.createElement("div");
-                    popup.className = "gacha-popup";
-                    popup.innerHTML = `
-                        <div class="gacha-card">
-                          <img src="${spriteURL}" alt="${awarded.name}">
-                          <h5>${awarded.name}</h5>
-                          <p>Rarity: ${awarded.rarity}</p>
-                        </div>
-                    `;
-                    document.body.appendChild(popup);
-                    setTimeout(() => popup.remove(), 2000);
+                    showGachaReveal(ballSprite, awarded, responseData);
                 } else if (responseData.item === "Amulet Coin") {
-                    const spriteURL = getItemSprite("amulet-coin");
                     const card = document.createElement("div");
                     card.className = "gacha-popup";
                     card.innerHTML = `
-                        <div class="gacha-card">
-                          <img src="${spriteURL}" alt="Amulet Coin">
+                        <div class="gacha-card revealed">
+                          <img class="gacha-mon" src="${getItemSprite("amulet-coin")}" alt="Amulet Coin">
                           <h5>Amulet Coin</h5>
-                          <p>+5% coin gain (cap 10)</p>
+                          <p>${escapeHTML(itemInfo("Amulet Coin"))}</p>
+                          <p><strong>You now have ${userAmuletCoins}/10 (+${Math.min(userAmuletCoins, 10) * 10}% gym coins).</strong></p>
+                          <div class="tap-hint">Tap anywhere to continue</div>
                         </div>
                     `;
+                    card.addEventListener("click", () => card.remove());
                     document.body.appendChild(card);
-                    setTimeout(() => card.remove(), 2000);
                 } else {
                     showSuccessBox(`Successfully purchased ${responseData.item || "item"}!`);
                 }

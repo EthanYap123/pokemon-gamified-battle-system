@@ -2,11 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
     <link href="../css/style.css" rel="stylesheet" />
     <link href="../css/color.css" rel="stylesheet" />
-    <title>Team</title>
+    <title>Team · PokéBattle</title>
     <link
       rel="icon"
       type="image/png"
@@ -18,7 +20,8 @@
     <nav class="navbar">
       <div class="navbar-left">
         <a href="index.html">
-          <img id="logo" class="logo" alt="Logo" />
+          <img id="logo" class="logo" alt="" />
+          <span class="brand-name">PokéBattle</span>
         </a>
         <a href="index.html">Home</a>
         <a href="users.html">Users</a>
@@ -42,7 +45,11 @@
     <!-- Main Content -->
     <main>
       <div class="container">
-        <h1 class="text-center">Team</h1>
+        <div class="page-header">
+          <span class="eyebrow">Your party</span>
+          <h1>Team</h1>
+          <p>Up to six Pokémon battle for you. Slot 1 leads the fight. Drag a Pokémon onto another slot to swap them, or use the arrows.</p>
+        </div>
 
         <!-- Team Slots -->
         <div id="teamGrid" class="team-grid">
@@ -50,10 +57,12 @@
         </div>
 
         <!-- Owned Pokémon -->
-        <h2>Your Pokémon</h2>
-        <div id="ownedList" class="owned-list">
-          <!-- JS will render owned Pokémon cards here -->
-        </div>
+        <section class="section">
+          <div class="section-title"><h2>Your Pokémon</h2><span id="ownedCount"></span></div>
+          <div id="ownedList" class="owned-list">
+            <!-- JS will render owned Pokémon cards here -->
+          </div>
+        </section>
       </div>
     </main>
 
@@ -61,9 +70,12 @@
     <div id="starterModal" class="modal">
       <div class="modal-content">
         <h2>Choose Your Starter</h2>
-        <button data-starter="bulbasaur">Bulbasaur</button>
-        <button data-starter="charmander">Charmander</button>
-        <button data-starter="squirtle">Squirtle</button>
+        <p>This Pokémon will lead your team.</p>
+        <div class="starter-options">
+          <button data-starter="bulbasaur"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="" />Bulbasaur</button>
+          <button data-starter="charmander"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="" />Charmander</button>
+          <button data-starter="squirtle"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="" />Squirtle</button>
+        </div>
       </div>
     </div>
 

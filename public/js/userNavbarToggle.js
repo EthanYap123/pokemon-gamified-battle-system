@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const registerButton = document.getElementById("registerButton");
 
   if (token) {
-    // ✅ Logged in → show Profile + Logout
+    // Logged in → show Profile + Logout
     profileButton.classList.remove("d-none");
     logoutButton.classList.remove("d-none");
     loginButton.classList.add("d-none");
@@ -21,10 +21,27 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "login.html";
     });
   } else {
-    // ❌ Not logged in → show Login + Register
+    // Not logged in → show Login + Register
     profileButton.classList.add("d-none");
     logoutButton.classList.add("d-none");
     loginButton.classList.remove("d-none");
     registerButton.classList.remove("d-none");
+  }
+
+  // Mobile menu toggle
+  const navbar = document.querySelector(".navbar");
+  if (navbar) {
+    const toggle = document.createElement("button");
+    toggle.className = "nav-toggle";
+    toggle.type = "button";
+    toggle.setAttribute("aria-label", "Open menu");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.innerHTML = "<span></span>";
+    toggle.addEventListener("click", () => {
+      const open = navbar.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    });
+    navbar.appendChild(toggle);
   }
 });

@@ -41,6 +41,7 @@ Run 'npm install' in your terminal
 Update the .env file with your MySQL credentials:
 
 DB_HOST=localhost
+DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=password
 DB_NAME=pokemon_db_ca2
@@ -48,7 +49,18 @@ JWT_SECRET_KEY=your-secret-key
 JWT_EXPIRES_IN=30m
 JWT_ALGORITHM=HS256
 
+Optional: PORT (defaults to 3000) and DB_SSL_REJECT_AUTHORISE=true to enforce the database's SSL certificate.
+
 
 To start server:
 Run 'npm run init_tables' in your terminal
-Run 'npm run dev' in you terminal
+Run 'npm run dev' in your terminal
+Then open http://localhost:3000
+
+
+Deploying
+
+render.yaml describes a Render web service. Create a MySQL database on any host
+(for example Aiven or TiDB Cloud), run 'npm run init_tables' once with that
+database's details in .env, then create the service on Render from this
+repository and fill in the DB_* values it asks for.

@@ -1,4 +1,4 @@
-export const baseStats = {
+const baseStats = {
     1: { hp: 45, attack: 49, defense: 49, sp_attack: 65, sp_defense: 65, speed: 45 }, // Bulbasaur
     2: { hp: 60, attack: 62, defense: 63, sp_attack: 80, sp_defense: 80, speed: 60 }, // Ivysaur
     3: { hp: 80, attack: 82, defense: 83, sp_attack: 100, sp_defense: 100, speed: 80 }, // Venusaur
@@ -151,3 +151,5 @@ export const baseStats = {
     150: { hp: 106, attack: 110, defense: 90, sp_attack: 154, sp_defense: 90, speed: 130 }, // Mewtwo
     151: { hp: 100, attack: 100, defense: 100, sp_attack: 100, sp_defense: 100, speed: 100 }, // Mew
 };
+
+module.exports = { baseStats };

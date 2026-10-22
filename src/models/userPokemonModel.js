@@ -15,10 +15,10 @@ module.exports.findByUser = (user_id, callback) => {
 // Task - Get all Pokémon owned by a user filtered by rarity
 module.exports.findByUserAndRarity = (user_id, rarity, callback) => {
     const SQLSTATEMENT = `
-        SELECT up.id, p.name, p.rarity, p.types, up.obtained_at
+        SELECT up.id, p.name, p.rarity, p.type1, p.type2, up.obtained_at
         FROM UserPokemon up
         JOIN Pokemon p ON up.pokemon_id = p.pokemon_id
-        WHERE up.user_id = ? AND up.rarity = ?;
+        WHERE up.user_id = ? AND p.rarity = ?;
     `;
     const VALUES = [user_id, rarity];
     pool.query(SQLSTATEMENT, VALUES, callback);

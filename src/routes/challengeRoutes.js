@@ -15,6 +15,7 @@ router.put('/:gym_id', jwtMiddleware.verifyToken, challengeController.updateChal
 router.post(
   '/:gym_id/completions',
   jwtMiddleware.verifyToken,
+  jwtMiddleware.verifyOwner,
   userCompletionController.createCompletion,
   userCompletionController.awardBadge
 );

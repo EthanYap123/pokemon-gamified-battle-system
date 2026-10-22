@@ -50,6 +50,9 @@ module.exports.addPokemon = (req, res) => {
             if (err.code === "TEAM_FULL") {
                 return res.status(403).json({ message: "Team already has 6 Pokémon." });
             }
+            if (err.code === "ALREADY_IN_TEAM") {
+                return res.status(409).json({ message: "That Pokémon is already in your team." });
+            }
             if (err.code === "NOT_OWNED") {
                 return res.status(403).json({ message: "User does not own this Pokémon." });
             }

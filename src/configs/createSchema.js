@@ -29,10 +29,8 @@ const CREATE_DB_SQL = `CREATE DATABASE IF NOT EXISTS ${database}`;
 pool.query(CHECK_DB_SQL, (error, results) => {
   if (error) {
     console.error('Error checking database:', error);
-    connection.release();
-    return;
+    process.exit(1);
   }
-  console.log('results:', results);
   if (results.length === 0) {
     // If database does not exist, create it
     console.log(`Database "${database}" does not exists`);

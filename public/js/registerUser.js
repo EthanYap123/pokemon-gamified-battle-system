@@ -24,8 +24,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const data = { username, email, password };
 
       const callback = (responseStatus, responseData) => {
-        console.log("responseStatus:", responseStatus);
-        console.log("responseData:", responseData);
 
         // Guard: only proceed if registration was successful
         if ((responseStatus === 201 || responseStatus === 200) && responseData?.userId) {

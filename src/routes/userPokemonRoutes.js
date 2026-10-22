@@ -7,6 +7,6 @@ const jwtMiddleware = require('../middleware/jwtMiddleware');
 router.get('/:user_id', jwtMiddleware.verifyToken, userPokemonController.getUserPokemons);
 
 // 2. Add/mark a Pokédex entry as obtained
-router.post('/:user_id', jwtMiddleware.verifyToken, userPokemonController.addUserPokemon);
+router.post('/:user_id', jwtMiddleware.verifyToken, jwtMiddleware.verifyOwner, userPokemonController.addUserPokemon);
 
 module.exports = router;

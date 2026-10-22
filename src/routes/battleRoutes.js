@@ -8,6 +8,7 @@ const jwtMiddleware = require('../middleware/jwtMiddleware');
 router.post(
     '/start',
     jwtMiddleware.verifyToken,
+    jwtMiddleware.verifyOwner,
     battleController.startBattle
 );
 
@@ -15,6 +16,7 @@ router.post(
 router.post(
     '/:battle_id/turn',
     jwtMiddleware.verifyToken,
+    jwtMiddleware.verifyOwner,
     battleController.takeTurn
 );
 
@@ -22,6 +24,7 @@ router.post(
 router.post(
     '/:battle_id/end',
     jwtMiddleware.verifyToken,
+    jwtMiddleware.verifyOwner,
     battleController.endBattle
 );
 

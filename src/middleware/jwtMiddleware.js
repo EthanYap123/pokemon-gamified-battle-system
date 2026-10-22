@@ -51,6 +51,18 @@ module.exports.sendToken = (req, res, next) => {
 };
 
 //////////////////////////////////////////////////////
+// MIDDLEWARE FUNCTION FOR CHECKING ACCOUNT OWNERSHIP
+// (run after verifyToken; user_id comes from the URL or the body)
+//////////////////////////////////////////////////////
+module.exports.verifyOwner = (req, res, next) => {
+  const requestedId = req.params.user_id ?? req.body.user_id;
+  if (parseInt(requestedId) !== res.locals.userId) {
+    return res.status(403).json({ message: "Forbidden: Not your account" });
+  }
+  next();
+};
+
+//////////////////////////////////////////////////////
 // MIDDLEWARE FUNCTION FOR VERIFYING JWT TOKEN
 //////////////////////////////////////////////////////
 module.exports.verifyToken = (req, res, next) => {
@@ -68,7 +80,6 @@ module.exports.verifyToken = (req, res, next) => {
         return res.status(401).json({ error: "Invalid token" });
       }
 
-      console.log("Decoded JWT:", decoded);
 
       res.locals.userId = decoded.userId;
       res.locals.tokenTimestamp = decoded.timestamp;

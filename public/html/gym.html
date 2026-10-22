@@ -2,11 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
     <link href="../css/style.css" rel="stylesheet" />
     <link href="../css/color.css" rel="stylesheet" />
-    <title>Gyms</title>
+    <title>Gyms · PokéBattle</title>
     <link
       rel="icon"
       type="image/png"
@@ -18,7 +20,8 @@
     <nav class="navbar">
       <div class="navbar-left">
         <a href="index.html">
-          <img id="logo" class="logo" alt="Logo" />
+          <img id="logo" class="logo" alt="" />
+          <span class="brand-name">PokéBattle</span>
         </a>
         <a href="index.html">Home</a>
         <a href="users.html">Users</a>
@@ -42,7 +45,11 @@
     <!-- Main Content -->
     <main>
       <div class="container">
-        <h1 class="text-center">Gyms</h1>
+        <div class="page-header">
+          <span class="eyebrow">Kanto League</span>
+          <h1>Gyms</h1>
+          <p>Beat each Gym Leader in order to earn their badge. Clear all nine to become Champion.</p>
+        </div>
         <!-- Gym Grid -->
         <div id="gymGrid" class="gym-grid">
           <!-- Cards will be injected dynamically by gym.js -->

@@ -26,7 +26,10 @@ module.exports.addAmuletCoin = (user_id, callback) => {
 
 // Insert Pokémon into UserPokemon
 module.exports.insertPokemon = (data, callback) => {
-    const SQL = `INSERT INTO UserPokemon (user_id, pokemon_id) VALUES (?, ?);`;
+    const SQL = `
+        INSERT INTO UserPokemon (user_id, pokemon_id, rarity)
+        SELECT ?, pokemon_id, rarity FROM Pokemon WHERE pokemon_id = ?;
+    `;
     pool.query(SQL, [data.user_id, data.pokemon_id], callback);
 };
 

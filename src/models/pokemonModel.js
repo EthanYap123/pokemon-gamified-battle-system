@@ -26,22 +26,27 @@ module.exports.findById = (id, callback) => {
 // Task - Get Pokémon by Type
 module.exports.findByType = (type, callback) => {
     const SQLSTATEMENT = `
-        SELECT * FROM UserPokemon WHERE JSON_CONTAINS(types, ?);
+        SELECT pokemon_id, name, rarity, type1, type2
+        FROM Pokemon
+        WHERE type1 = ? OR type2 = ?
+        ORDER BY pokemon_id ASC;
     `;
-    const VALUES = [JSON.stringify(type)];
+    const VALUES = [type, type];
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
 
 // Task - Insert New Pokémon (reference data)
 module.exports.insertSingle = (data, callback) => {
     const SQLSTATEMENT = `
-        INSERT INTO UserPokemon (name, rarity, types)
-        VALUES (?, ?, ?);
+        INSERT INTO Pokemon (name, rarity, type1, type2)
+        VALUES (?, ?, ?, ?);
     `;
+    const types = Array.isArray(data.types) ? data.types : [data.types];
     const VALUES = [
         data.name,
         data.rarity,
-        JSON.stringify(data.types)
+        types[0],
+        types[1] || null
     ];
     pool.query(SQLSTATEMENT, VALUES, callback);
 };

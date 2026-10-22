@@ -8,6 +8,6 @@ const jwtMiddleware = require('../middleware/jwtMiddleware');
 router.get('/items', shopController.getItems);
 
 // Purchase an item (amulet coin or ball)
-router.post('/:user_id/purchase', jwtMiddleware.verifyToken, shopController.purchaseItem);
+router.post('/:user_id/purchase', jwtMiddleware.verifyToken, jwtMiddleware.verifyOwner, shopController.purchaseItem);
 
 module.exports = router;

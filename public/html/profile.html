@@ -2,11 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
     <link href="../css/style.css" rel="stylesheet" />
     <link href="../css/color.css" rel="stylesheet" />
-    <title>Profile</title>
+    <title>Profile · PokéBattle</title>
     <link
       rel="icon"
       type="image/png"
@@ -18,7 +20,8 @@
     <nav class="navbar">
       <div class="navbar-left">
         <a href="index.html">
-          <img id="logo" class="logo" alt="Logo" />
+          <img id="logo" class="logo" alt="" />
+          <span class="brand-name">PokéBattle</span>
         </a>
         <a href="index.html">Home</a>
         <a href="users.html">Users</a>
@@ -39,35 +42,51 @@
 
     <!-- Main Content -->
     <main>
-      <div class="container text-center">
-        <h1 class="text-center">Profile</h1>
-
+      <div class="container">
         <!-- User Info -->
-        <section style="margin-top: 30px">
-          <p><strong>Username:</strong> <span id="profileUsername"></span></p>
-          <p><strong>Email:</strong> <span id="profileEmail"></span></p>
-          <p><strong>Coins:</strong> <span id="profileCoins"></span></p>
-          <p><strong>Amulet Coins:</strong> <span id="profileAmuletCoins"></span></p>
+        <section class="profile-hero">
+          <div class="avatar lg" id="profileAvatar">?</div>
+          <div>
+            <span class="eyebrow">Trainer card</span>
+            <h1 id="profileUsername">Loading...</h1>
+            <p id="profileEmail"></p>
+          </div>
         </section>
 
-        <!-- Badges -->
-        <section style="margin-top: 40px">
-          <h2>Your Badges</h2>
-          <div id="profileBadges" class="row"></div>
-        </section>
+        <div class="stat-grid">
+          <div class="stat-tile">
+            <div class="label">Coins</div>
+            <div class="value" id="profileCoins">–</div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">Amulet Coins<i class="info-dot" id="amuletInfo" tabindex="0">i</i></div>
+            <div class="value" id="profileAmuletCoins">–</div>
+            <div class="text-muted small" id="profileAmuletBoost"></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">Badges</div>
+            <div class="value" id="profileBadgeCount">–</div>
+          </div>
+          <!-- Pokémon Summary -->
+          <div class="stat-tile">
+            <div class="label">Pokémon owned</div>
+            <div class="value" id="pokemonOwned">–</div>
+            <div class="progress"><div id="pokemonCompletionBar"></div></div>
+            <div class="text-muted small" style="margin-top: 4px"><span id="pokemonCompletion"></span> complete</div>
+          </div>
+        </div>
 
         <!-- Team -->
-        <section style="margin-top: 40px">
-          <h2>Your Team</h2>
+        <section class="section">
+          <div class="section-title"><h2>Your Team</h2><a href="team.html">Edit team →</a></div>
           <!-- This container is where profile.js will render the team -->
           <div id="profileTeam" class="team-grid"></div>
         </section>
 
-        <!-- Pokémon Summary -->
-        <section style="margin-top: 40px">
-          <h2>Pokémon Summary</h2>
-          <p><strong>Owned:</strong> <span id="pokemonOwned"></span></p>
-          <p><strong>Completion Rate:</strong> <span id="pokemonCompletion"></span></p>
+        <!-- Badges -->
+        <section class="section">
+          <div class="section-title"><h2>Your Badges</h2><a href="gym.html">Gyms →</a></div>
+          <div id="profileBadges" class="row"></div>
         </section>
       </div>
     </main>
