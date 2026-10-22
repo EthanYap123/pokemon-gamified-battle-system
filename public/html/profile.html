@@ -76,6 +76,22 @@
           </div>
         </div>
 
+        <!-- Battle record -->
+        <section class="section">
+          <div class="section-title"><h2>Battle record</h2></div>
+          <div class="stat-grid" id="battleStats">
+            <div class="stat-tile"><div class="label">Battles</div><div class="value" id="statBattles">–</div></div>
+            <div class="stat-tile"><div class="label">Wins / Losses</div><div class="value" id="statWinLoss">–</div></div>
+            <div class="stat-tile">
+              <div class="label">Win rate</div>
+              <div class="value" id="statWinRate">–</div>
+              <div class="progress"><div id="statWinRateBar"></div></div>
+            </div>
+            <div class="stat-tile"><div class="label">Coins earned</div><div class="value" id="statCoinsEarned">–</div></div>
+            <div class="stat-tile"><div class="label">Ball pulls</div><div class="value" id="statPulls">–</div></div>
+          </div>
+        </section>
+
         <!-- Team -->
         <section class="section">
           <div class="section-title"><h2>Your Team</h2><a href="team.html">Edit team →</a></div>
@@ -87,6 +103,36 @@
         <section class="section">
           <div class="section-title"><h2>Your Badges</h2><a href="gym.html">Gyms →</a></div>
           <div id="profileBadges" class="row"></div>
+        </section>
+
+        <!-- Account settings -->
+        <section class="section">
+          <div class="section-title"><h2>Account settings</h2></div>
+          <form id="accountForm" class="settings-card auth-form">
+            <div class="settings-grid">
+              <div class="form-group">
+                <label for="settingsUsername">Username</label>
+                <input type="text" id="settingsUsername" autocomplete="username" required />
+              </div>
+              <div class="form-group">
+                <label for="settingsEmail">Email</label>
+                <input type="email" id="settingsEmail" autocomplete="email" required />
+              </div>
+              <div class="form-group">
+                <label for="settingsNewPassword">New password <span class="text-muted small">(optional)</span></label>
+                <input type="password" id="settingsNewPassword" autocomplete="new-password" />
+              </div>
+              <div class="form-group">
+                <label for="settingsConfirmPassword">Confirm new password</label>
+                <input type="password" id="settingsConfirmPassword" autocomplete="new-password" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="settingsCurrentPassword">Current password <span class="text-muted small">(required to save)</span></label>
+              <input type="password" id="settingsCurrentPassword" autocomplete="current-password" required />
+            </div>
+            <button type="submit" class="btn btn-buy">Save changes</button>
+          </form>
         </section>
       </div>
     </main>
