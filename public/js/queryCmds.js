@@ -66,6 +66,36 @@ function displayPokemonName(name) {
   return String(name).replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// What each item does, shown in tooltips (keep in sync with the server rules)
+const ITEM_INFO = {
+  "amulet coin":
+    "Each Amulet Coin adds +10% to the coins you win from gyms, up to 10 coins (+100%). Clearing a gym also has a 10% chance to give you one.",
+  "poke ball":
+    "Catches a random Pokémon: 70% common, 25% uncommon, 5% rare. Already own it? You get half the price back.",
+  "great ball":
+    "Catches a random Pokémon: 50% common, 40% uncommon, 9% rare, 1% ultra rare. Already own it? You get half the price back.",
+  "ultra ball":
+    "Catches a random Pokémon: 30% common, 50% uncommon, 18% rare, 2% ultra rare. Already own it? You get half the price back.",
+};
+
+function itemInfo(name) {
+  const key = String(name || "").toLowerCase().replace(/é/g, "e").trim();
+  return ITEM_INFO[key] || "";
+}
+
+// Keep tooltips on screen: line them up with the element when it is near an edge
+function placeTooltip(event) {
+  const el = event.target.closest && event.target.closest("[data-tip]");
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const half = Math.min(250, window.innerWidth * 0.8) / 2;
+  const centre = rect.left + rect.width / 2;
+  el.classList.toggle("tip-start", centre - half < 8);
+  el.classList.toggle("tip-end", centre + half > window.innerWidth - 8);
+}
+document.addEventListener("mouseover", placeTooltip);
+document.addEventListener("focusin", placeTooltip);
+
 // Small toast message at the top of the page
 function showToast(message, type = "success") {
   document.querySelectorAll(".feedback-box").forEach((box) => box.remove());

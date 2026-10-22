@@ -76,8 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <p>Leader: ${escapeHTML(gym.leader)}</p>
             <div class="pokemon-team">${teamSprites}</div>
             <div class="gym-reward">
-              <span class="chip gold">${gym.reward_first_clear} first clear</span>
-              <span class="chip">${gym.reward_replay} replay</span>
+              <span class="chip gold" tabindex="0" data-tip="Coins for your first win here, plus the gym's badge. Amulet Coins add +10% each.">${gym.reward_first_clear} first clear</span>
+              <span class="chip" tabindex="0" data-tip="Coins for every win after the first. Amulet Coins add +10% each.">${gym.reward_replay} replay</span>
             </div>
           </div>
         `;

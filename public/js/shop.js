@@ -18,7 +18,7 @@ function renderBalance() {
     if (balanceEl) {
         balanceEl.innerHTML = `
             <span class="chip gold">💰 Coins <b>${Number(userCoins).toLocaleString()}</b></span>
-            <span class="chip"><img src="${getItemSprite("amulet-coin")}" alt="">Amulet Coins <b>${userAmuletCoins}/10</b></span>
+            <span class="chip tip-below" tabindex="0" data-tip="${escapeHTML(itemInfo("Amulet Coin"))} You have +${Math.min(userAmuletCoins, 10) * 10}% right now."><img src="${getItemSprite("amulet-coin")}" alt="">Amulet Coins <b>${userAmuletCoins}/10</b><i class="info-dot">i</i></span>
         `;
     }
 }
@@ -89,8 +89,10 @@ const callback = (responseStatus, responseData) => {
 
         displayItem.innerHTML = `
           <div class="shop-card">
-            <img src="${spriteURL}" alt="Sprite of ${escapeHTML(shop.item_name)}">
-            <h5>${escapeHTML(shop.item_name)}</h5>
+            <span class="item-icon" tabindex="0" data-tip="${escapeHTML(itemInfo(shop.item_name) || shop.effect)}">
+              <img src="${spriteURL}" alt="Sprite of ${escapeHTML(shop.item_name)}">
+            </span>
+            <h5>${escapeHTML(shop.item_name)}<i class="info-dot" tabindex="0" data-tip="${escapeHTML(itemInfo(shop.item_name) || shop.effect)}">i</i></h5>
             <div class="price">💰 ${Number(shop.price).toLocaleString()}</div>
             ${oddsBar(shop.effect)}
             <p class="effect">${escapeHTML(shop.effect)}</p>
@@ -180,7 +182,8 @@ document.addEventListener("click", function (event) {
                         <div class="gacha-card revealed">
                           <img class="gacha-mon" src="${getItemSprite("amulet-coin")}" alt="Amulet Coin">
                           <h5>Amulet Coin</h5>
-                          <p>+10% coin gain from gyms (cap 10)</p>
+                          <p>${escapeHTML(itemInfo("Amulet Coin"))}</p>
+                          <p><strong>You now have ${userAmuletCoins}/10 (+${Math.min(userAmuletCoins, 10) * 10}% gym coins).</strong></p>
                           <div class="tap-hint">Tap anywhere to continue</div>
                         </div>
                     `;

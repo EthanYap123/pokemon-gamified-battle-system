@@ -32,7 +32,7 @@ const callback = (responseStatus, responseData) => {
       </div>
       <div class="stat-chips">
         <span class="chip gold">💰 ${Number(user.coins).toLocaleString()}</span>
-        <span class="chip"><img src="${getItemSprite("amulet-coin")}" alt="Amulet Coins">${user.amulet_coins}</span>
+        <span class="chip" tabindex="0" data-tip="${escapeHTML(itemInfo("Amulet Coin"))}"><img src="${getItemSprite("amulet-coin")}" alt="Amulet Coins">${user.amulet_coins} Amulet</span>
       </div>
     </div>
   `;

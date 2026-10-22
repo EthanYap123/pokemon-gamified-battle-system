@@ -19,6 +19,9 @@ function loadProfile() {
         document.getElementById("profileAvatar").textContent = (profile.username || "?").charAt(0);
         document.getElementById("profileCoins").textContent = Number(profile.coins).toLocaleString();
         document.getElementById("profileAmuletCoins").textContent = `${profile.amulet_coins}/10`;
+        document.getElementById("profileAmuletBoost").textContent =
+            `+${Math.min(profile.amulet_coins, 10) * 10}% coins from gyms`;
+        document.getElementById("amuletInfo").dataset.tip = itemInfo("Amulet Coin");
 
         // 2. Get badges
         fetchMethod(currentUrl + `/api/userbadges/users/${userId}/badges`, function (status, badges) {

@@ -248,11 +248,12 @@ function showBattlePopup(data) {
         if (data.coins_awarded) {
             chips.push(`<span class="chip gold">+${data.coins_awarded} coins</span>`);
             if (data.boost_multiplier && data.boost_multiplier > 1) {
-                chips.push(`<span class="chip">Amulet boost x${data.boost_multiplier}</span>`);
+                chips.push(`<span class="chip" tabindex="0" data-tip="Your Amulet Coins added +${Math.round((data.boost_multiplier - 1) * 100)}% to this reward.">Amulet boost x${data.boost_multiplier}</span>`);
             }
         }
         if (data.amulet_awarded) {
-            chips.push(`<span class="chip gold"><img src="${getItemSprite("amulet-coin")}" alt="">New Amulet Coin</span>`);
+            chips.push(`<span class="chip gold" tabindex="0" data-tip="${escapeHTML(itemInfo("Amulet Coin"))}"><img src="${getItemSprite("amulet-coin")}" alt="">New Amulet Coin<i class="info-dot">i</i></span>`);
+            special += `<p class="text-muted small" style="margin-top: 8px">Amulet Coin: +10% coins from every gym win from now on (up to 10 coins).</p>`;
         }
         if (data.badge_awarded) {
             chips.push(`<span class="chip brand">Badge earned!</span>`);
