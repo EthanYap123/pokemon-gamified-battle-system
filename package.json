@@ -3,7 +3,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "init_tables": "node src/configs/createSchema.js && node src/configs/initTables.js",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build:demo": "node demo/build.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

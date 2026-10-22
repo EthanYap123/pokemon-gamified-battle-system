@@ -79,6 +79,17 @@ Run 'npm run dev' in your terminal
 Then open http://localhost:3000
 
 
+Live demo (GitHub Pages)
+
+https://ethanyap123.github.io/pokemon-gamified-battle-system/
+
+GitHub Pages only serves static files, so the demo is a browser-only build:
+'npm run build:demo' copies public/ into _site/ and adds demo/mock-api.js,
+which answers the same /api routes in the browser using the real battle engine
+and the starting data from initTables.js. Progress is saved in the visitor's
+browser. .github/workflows/deploy.yml builds and publishes it on every push to main.
+
+
 Deploying
 
 render.yaml describes a Render web service. Create a MySQL database on any host
