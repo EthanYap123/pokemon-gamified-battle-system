@@ -2,12 +2,13 @@ const pool = require('../services/db');
 const userCompletionModel = require('../models/userCompletionModel');
 const challengeModel = require('../models/challengeModel');
 const userModel = require('../models/userModel');
+const battleModel = require('../models/battleModel');
 
-// Task 9 - Post: Create completion
+// Task 9 - Post: Create completion (needs a won, unclaimed battle against this gym)
 module.exports.createCompletion = (req, res, next) => {
 
-    if (!req.body.user_id) {
-        return res.status(400).json({ message: "Error: user_id or details missing" });
+    if (!req.body.user_id || !req.body.battle_id) {
+        return res.status(400).json({ message: "Error: user_id or battle_id missing" });
     }
 
     const data = {
@@ -42,7 +43,22 @@ module.exports.createCompletion = (req, res, next) => {
             proceedInsert();
         }
 
+        // Rewards are only paid once per won battle
         function proceedInsert() {
+            battleModel.claimWin(req.body.battle_id, data.user_id, data.gym_id)
+                .then(claimed => {
+                    if (!claimed) {
+                        return res.status(403).json({ message: "Win a battle against this gym to claim its rewards." });
+                    }
+                    insertCompletion();
+                })
+                .catch(errClaim => {
+                    console.error("Error claiming battle win:", errClaim);
+                    res.status(500).json({ message: "Internal server error." });
+                });
+        }
+
+        function insertCompletion() {
             userModel.selectById({ user_id: data.user_id }, (err2, userResults) => {
                 if (err2) return res.status(500).json({ message: "Internal server error." });
                 if (userResults.length === 0) return res.status(404).json({ message: "User not found." });

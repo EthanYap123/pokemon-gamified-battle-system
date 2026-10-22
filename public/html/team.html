@@ -59,12 +59,54 @@
         <!-- Owned Pokémon -->
         <section class="section">
           <div class="section-title"><h2>Your Pokémon</h2><span id="ownedCount"></span></div>
+          <div class="filter-bar" id="ownedFilters">
+            <label for="ownedSearch" class="search-label">Search
+              <input id="ownedSearch" type="search" placeholder="Name" autocomplete="off" />
+            </label>
+            <label for="ownedRarity">Rarity
+              <select id="ownedRarity">
+                <option value="">Any</option>
+                <option value="common">Common</option>
+                <option value="uncommon">Uncommon</option>
+                <option value="rare">Rare</option>
+                <option value="ultra">Ultra</option>
+                <option value="legendary">Legendary</option>
+              </select>
+            </label>
+            <label for="ownedType">Type
+              <select id="ownedType">
+                <option value="">Any</option>
+              </select>
+            </label>
+            <label for="ownedSort">Sort by
+              <select id="ownedSort">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="rarity">Rarity (best first)</option>
+                <option value="dex">Pokédex number</option>
+                <option value="name">Name A–Z</option>
+              </select>
+            </label>
+            <label class="check-label" for="ownedHideTeam">
+              <input type="checkbox" id="ownedHideTeam" /> Hide team members
+            </label>
+          </div>
           <div id="ownedList" class="owned-list">
             <!-- JS will render owned Pokémon cards here -->
           </div>
         </section>
       </div>
     </main>
+
+    <!-- Replace a team member when the team is full -->
+    <div id="replaceModal" class="popup" role="dialog" aria-modal="true" aria-labelledby="replaceTitle">
+      <div class="popup-content replace-modal">
+        <button class="modal-close" id="replaceClose" aria-label="Cancel">×</button>
+        <h2 id="replaceTitle">Your team is full</h2>
+        <p id="replaceText"></p>
+        <div class="replace-grid" id="replaceGrid"></div>
+      </div>
+    </div>
 
     <!-- Starter Modal -->
     <div id="starterModal" class="modal">

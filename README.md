@@ -12,6 +12,27 @@ It extends the backend from CA1 by adding a frontend interface and gamification 
 This project demonstrates backend–frontend integration, secure authentication, and interactive gameplay mechanics.
 
 
+Game Rules
+
+Battles (src/services/battleEngine.js)
+- Your Pokémon are level 50; gym Pokémon range from level 36 (Brock) to 48 (Blue)
+- Damage uses the main-series formula: same-type bonus (1.5x), type effectiveness
+  including immunities (0x), 1/16 critical hits (1.5x) and a random 85-100% roll
+- Move type decides physical or special (Gen 3 style)
+- Turn order: switching first, then move priority (Quick Attack is +1), then Speed
+- Switch Pokémon mid-battle (uses your turn) or pick the next one after a faint
+- Splash does nothing, Transform copies the target, Explosion and Self-Destruct faint the user
+- Gym rewards are only paid once per won battle, and gyms must be beaten in order
+
+Shop
+- Poké, Great and Ultra Balls roll a rarity, then a Pokémon of that Pokédex rarity
+- Duplicates refund half the ball's price
+- 10-pull for 10% off, with at least one uncommon or better
+- Rare guarantee: the 30th pull in a row without a rare is a rare
+- One free Poké Ball per day
+- Amulet Coins add +10% gym coins each (max 10)
+
+
 Folder Structure
 
 BED-CA2-P2523752-DIT1B07/

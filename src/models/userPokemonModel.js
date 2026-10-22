@@ -3,10 +3,11 @@ const pool = require('../services/db');
 // Task - Get all Pokémon owned by a user
 module.exports.findByUser = (user_id, callback) => {
     const SQLSTATEMENT = `
-        SELECT up.id, p.name, p.rarity, p.type1, p.type2, up.obtained_at
+        SELECT up.id, up.pokemon_id, p.name, p.rarity, p.type1, p.type2, up.obtained_at
         FROM UserPokemon up
         JOIN Pokemon p ON up.pokemon_id = p.pokemon_id
-        WHERE up.user_id = ?;
+        WHERE up.user_id = ?
+        ORDER BY up.id ASC;
     `;
     const VALUES = [user_id];
     pool.query(SQLSTATEMENT, VALUES, callback);

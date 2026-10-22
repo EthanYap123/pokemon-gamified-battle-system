@@ -47,10 +47,15 @@
       <div class="container">
         <div class="page-header">
           <span class="eyebrow">Community</span>
-          <h1>Trainers</h1>
-          <p>Everyone playing, with their coin balance and Amulet Coins.</p>
+          <h1>Leaderboard</h1>
+          <p>Every trainer, ranked. Switch what you rank by below.</p>
         </div>
-        <div id="userList" class="row"></div>
+        <div class="sort-tabs" role="tablist" aria-label="Rank by">
+          <button class="active" data-sort="badges" role="tab" aria-selected="true">🏅 Badges</button>
+          <button data-sort="caught" role="tab" aria-selected="false">📖 Pokémon caught</button>
+          <button data-sort="coins" role="tab" aria-selected="false">💰 Coins</button>
+        </div>
+        <div id="userList" class="leaderboard"></div>
       </div>
     </main>
 

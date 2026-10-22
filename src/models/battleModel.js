@@ -1,143 +1,91 @@
 const pool = require('../services/db');
+const db = pool.promise();
 
-// 1. Create Battle (initialize state passed in from controller)
-module.exports.createBattle = (user_id, gym_id, state, callback) => {
+// 1. Create Battle (state comes from the battle engine)
+module.exports.createBattle = async (user_id, gym_id, state) => {
   const SQL = `
     INSERT INTO Battles (user_id, gym_id, state, result)
     VALUES (?, ?, ?, NULL);
   `;
-
-  // Ensure safe serialization
-  const safeState = JSON.parse(JSON.stringify(state));
-  const stateJSON = JSON.stringify(safeState);
-
-  pool.query(SQL, [user_id, gym_id, stateJSON], (err, results) => {
-    if (err) {
-      console.error("!!! [createBattle] DB insert error:", err);
-      return callback(err);
-    }
-
-
-    const battleState = {
-      battle_id: results.insertId,
-      user_id,
-      gym_id,
-      state: safeState
-    };
-    callback(null, battleState);
-  });
+  const [results] = await db.query(SQL, [user_id, gym_id, JSON.stringify(state)]);
+  return results.insertId;
 };
 
-// 2. Get Battle State
-module.exports.getBattleState = (battle_id, callback) => {
-  const SQL = `SELECT battle_id, user_id, gym_id, state, result FROM Battles WHERE battle_id = ?;`;
+// 2. Get Battle (null when it does not exist)
+module.exports.getBattle = async (battle_id) => {
+  const SQL = `SELECT battle_id, user_id, gym_id, state, result, claimed FROM Battles WHERE battle_id = ?;`;
+  const [results] = await db.query(SQL, [battle_id]);
+  if (results.length === 0) return null;
 
-  pool.query(SQL, [battle_id], (err, results) => {
-    if (err) {
-      console.error("!!! [getBattleState] DB select error:", err);
-      return callback(err);
-    }
-    if (results.length === 0) {
-      return callback(null, null);
-    }
-
-    let stateRaw = results[0].state;
-    let state;
-    try {
-      // Always parse if it's a string
-      state = typeof stateRaw === "string" ? JSON.parse(stateRaw) : stateRaw;
-    } catch (e) {
-      console.error("!!! [getBattleState] Failed to parse battle state:", e);
-      return callback(e);
-    }
-
-    const battleData = {
-      battle_id: results[0].battle_id,
-      user_id: results[0].user_id,
-      gym_id: results[0].gym_id,
-      state,
-      result: results[0].result
-    };
-
-    callback(null, battleData);
-  });
+  const row = results[0];
+  return {
+    ...row,
+    state: typeof row.state === "string" ? JSON.parse(row.state) : row.state,
+  };
 };
 
-// 3. Update Battle State (after a turn)
-module.exports.updateBattleState = (battle_id, state, callback) => {
-  const SQL = `UPDATE Battles SET state = ? WHERE battle_id = ?;`;
-
-
-  const safeState = JSON.parse(JSON.stringify(state));
-  const stateJSON = JSON.stringify(safeState);
-
-  pool.query(SQL, [stateJSON, battle_id], (err, results) => {
-    if (err) {
-      console.error("!!! [updateBattleState] DB update error:", err);
-      return callback(err);
-    }
-    callback(null, results);
-  });
+// 3. Save state (and the result once the battle is over)
+module.exports.saveBattle = async (battle_id, state, result = null) => {
+  const SQL = `UPDATE Battles SET state = ?, result = ? WHERE battle_id = ?;`;
+  await db.query(SQL, [JSON.stringify(state), result, battle_id]);
 };
 
-// 4. Finalize Battle (win/lose + rewards + badge)
-module.exports.finalizeBattle = (battle_id, result, user_id, gym_id, callback) => {
-  const SQL = `UPDATE Battles SET result = ? WHERE battle_id = ?;`;
+// 4. Mark a won battle as claimed. Returns false if there is no unclaimed win.
+module.exports.claimWin = async (battle_id, user_id, gym_id) => {
+  const SQL = `
+    UPDATE Battles SET claimed = TRUE
+    WHERE battle_id = ? AND user_id = ? AND gym_id = ? AND result = 'win' AND claimed = FALSE;
+  `;
+  const [results] = await db.query(SQL, [battle_id, user_id, gym_id]);
+  return results.affectedRows === 1;
+};
 
-  pool.query(SQL, [result, battle_id], (err, results) => {
-    if (err) {
-      console.error("!!! [finalizeBattle] DB update error:", err);
-      return callback(err);
-    }
-    if (results.affectedRows === 0) {
-      return callback(new Error("Battle not found"));
-    }
+// 5. Data needed to start a battle
+module.exports.getGym = async (gym_id) => {
+  const [results] = await db.query(`SELECT * FROM Gym WHERE gym_id = ?;`, [gym_id]);
+  return results[0] || null;
+};
 
-    if (result === "win") {
+module.exports.hasClearedOrder = async (user_id, order_index) => {
+  const SQL = `
+    SELECT 1 FROM UserCompletion uc
+    JOIN Gym g ON uc.gym_id = g.gym_id
+    WHERE uc.user_id = ? AND g.order_index = ?
+    LIMIT 1;
+  `;
+  const [results] = await db.query(SQL, [user_id, order_index]);
+  return results.length > 0;
+};
 
-      const gymSQL = `SELECT reward_first_clear, reward_replay FROM Gym WHERE gym_id = ?;`;
-      pool.query(gymSQL, [gym_id], (errGym, gymResults) => {
-        if (errGym) {
-          console.error("!!! [finalizeBattle] Gym query error:", errGym);
-          return callback(errGym);
-        }
-        if (gymResults.length === 0) {
-          return callback(new Error("Gym not found"));
-        }
+module.exports.getUserTeam = async (user_id) => {
+  const SQL = `
+    SELECT t.user_pokemon_id, up.pokemon_id, p.name, p.type1, p.type2
+    FROM Team t
+    JOIN UserPokemon up ON t.user_pokemon_id = up.id
+    JOIN Pokemon p ON up.pokemon_id = p.pokemon_id
+    WHERE t.user_id = ?
+    ORDER BY t.slot ASC;
+  `;
+  const [results] = await db.query(SQL, [user_id]);
+  return results;
+};
 
-        const { reward_first_clear, reward_replay } = gymResults[0];
+module.exports.getPokemonByIds = async (ids) => {
+  if (ids.length === 0) return [];
+  const SQL = `SELECT pokemon_id, name, type1, type2 FROM Pokemon WHERE pokemon_id IN (?);`;
+  const [results] = await db.query(SQL, [ids]);
+  return results;
+};
 
-        const completionSQL = `SELECT COUNT(*) AS clears FROM UserCompletion WHERE user_id = ? AND gym_id = ?;`;
-        pool.query(completionSQL, [user_id, gym_id], (errComp, compResults) => {
-          if (errComp) {
-            console.error("!!! [finalizeBattle] Completion query error:", errComp);
-            return callback(errComp);
-          }
-
-          const clears = compResults[0].clears;
-
-          const badgeSQL = `SELECT name FROM Badge WHERE gym_id = ?;`;
-          pool.query(badgeSQL, [gym_id], (errBadge, badgeResults) => {
-            if (errBadge) {
-              console.error("!!! [finalizeBattle] Badge query error:", errBadge);
-              return callback(errBadge);
-            }
-            if (badgeResults.length === 0) {
-              return callback(new Error("Badge not found"));
-            }
-
-            const badgeName = badgeResults[0].name;
-
-            const reward = {
-              coins: clears === 0 ? reward_first_clear : reward_replay,
-              badge: badgeName
-            };
-            return callback(null, reward);
-          });
-        });
-      });
-    } else {
-      return callback(null, { coins: 0, badge: null });
-    }
-  });
+// 6. Battle record for the profile stats
+module.exports.getRecord = async (user_id) => {
+  const SQL = `
+    SELECT
+      SUM(result = 'win') AS wins,
+      SUM(result = 'lose') AS losses
+    FROM Battles
+    WHERE user_id = ?;
+  `;
+  const [results] = await db.query(SQL, [user_id]);
+  return { wins: Number(results[0].wins) || 0, losses: Number(results[0].losses) || 0 };
 };

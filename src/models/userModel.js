@@ -19,12 +19,53 @@ module.exports.insertSingle = (data, callback) => {
 
 // Task 2 - Get
 module.exports.selectAll = (callback) => {
-  // Exclude password hashes for security
+  // Public list: no password hashes or email addresses
   const SQLSTATEMENT = `
-    SELECT user_id, username, email, coins, amulet_coins
+    SELECT user_id, username, coins, amulet_coins
     FROM User;
   `;
   pool.query(SQLSTATEMENT, callback);
+};
+
+// Password hash for checking the current password
+module.exports.selectPasswordHash = (data, callback) => {
+  const SQLSTATEMENT = `SELECT password FROM User WHERE user_id = ?;`;
+  pool.query(SQLSTATEMENT, [data.user_id], callback);
+};
+
+// Totals for the profile stats
+module.exports.selectStats = async (user_id) => {
+  const SQLSTATEMENT = `
+    SELECT
+      (SELECT COALESCE(SUM(coins_awarded), 0) FROM UserCompletion WHERE user_id = ?) AS coins_earned,
+      (SELECT COUNT(*) FROM PullHistory WHERE user_id = ?) AS pulls,
+      (SELECT COUNT(*) FROM UserBadge WHERE user_id = ?) AS badges,
+      (SELECT COUNT(DISTINCT pokemon_id) FROM UserPokemon WHERE user_id = ?) AS caught;
+  `;
+  const [rows] = await pool.promise().query(SQLSTATEMENT, [user_id, user_id, user_id, user_id]);
+  const row = rows[0];
+  return {
+    coins_earned: Number(row.coins_earned),
+    pulls: Number(row.pulls),
+    badges: Number(row.badges),
+    caught: Number(row.caught)
+  };
+};
+
+// Leaderboard rows for every trainer
+module.exports.selectLeaderboard = async () => {
+  const SQLSTATEMENT = `
+    SELECT
+      u.user_id,
+      u.username,
+      u.coins,
+      u.amulet_coins,
+      (SELECT COUNT(*) FROM UserBadge ub WHERE ub.user_id = u.user_id) AS badges,
+      (SELECT COUNT(DISTINCT up.pokemon_id) FROM UserPokemon up WHERE up.user_id = u.user_id) AS caught
+    FROM User u;
+  `;
+  const [rows] = await pool.promise().query(SQLSTATEMENT);
+  return rows.map(r => ({ ...r, badges: Number(r.badges), caught: Number(r.caught) }));
 };
 
 // Task 3 - Get by id
@@ -46,12 +87,10 @@ module.exports.updateById = (data, callback) => {
     UPDATE User u
     LEFT JOIN User u2 
       ON (u2.username = ? OR u2.email = ?) AND u2.user_id != ?
-    SET 
-      u.username = ?, 
-      u.email = ?, 
-      u.password = ?, 
-      u.coins = ?, 
-      u.amulet_coins = ?
+    SET
+      u.username = ?,
+      u.email = ?,
+      u.password = COALESCE(?, u.password)
     WHERE u.user_id = ? AND u2.user_id IS NULL;
   `;
 
@@ -61,9 +100,7 @@ module.exports.updateById = (data, callback) => {
     data.user_id,         // exclude current user
     data.username,        // update username
     data.email,           // update email
-    data.password,        // update password
-    data.coins || 0,      // update coins
-    data.amulet_coins || 0, // update amulet coins
+    data.password,        // new password hash, or null to keep the current one
     data.user_id          // target user
   ];
 

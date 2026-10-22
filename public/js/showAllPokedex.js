@@ -99,8 +99,11 @@ function renderGlobalPokedex(responseStatus, responseData) {
         const displayItem = document.createElement("div");
         const name = displayPokemonName(pokemon.name);
 
+        displayItem.dataset.id = pokemon.pokemon_id;
+        displayItem.dataset.name = name.toLowerCase();
+        displayItem.dataset.open = "1";
         displayItem.innerHTML = `
-      <div class="pokemon-card">
+      <div class="pokemon-card dex-entry" tabindex="0" role="button" aria-label="View ${escapeHTML(name)} details">
         <span class="dex-no">${dexNumber(pokemon.pokemon_id)}</span>
         <img src="${spriteURL}" alt="${escapeHTML(name)}" loading="lazy">
         <h5>${escapeHTML(name)}</h5>
@@ -110,6 +113,7 @@ function renderGlobalPokedex(responseStatus, responseData) {
     `;
         pokemonList.appendChild(displayItem);
     });
+    applySearch();
 }
 
 function renderUserPokedex(responseStatus, responseData) {
@@ -182,8 +186,11 @@ function renderUserPokedex(responseStatus, responseData) {
 
         const nameDisplay = discovered ? displayPokemonName(pokemon.name) : "???";
 
+        displayItem.dataset.id = pokemon.pokemon_id;
+        displayItem.dataset.name = discovered ? nameDisplay.toLowerCase() : "";
+        displayItem.dataset.open = discovered ? "1" : "";
         displayItem.innerHTML = `
-          <div class="pokemon-card ${discovered ? "" : "undiscovered"}">
+          <div class="pokemon-card ${discovered ? "dex-entry" : "undiscovered"}" ${discovered ? `tabindex="0" role="button" aria-label="View ${escapeHTML(nameDisplay)} details"` : ""}>
             <span class="dex-no">${dexNumber(pokemon.pokemon_id)}</span>
             <img src="${spriteURL}" alt="${escapeHTML(nameDisplay)}" class="${imgClass}" loading="lazy">
             <h5>${escapeHTML(nameDisplay)}</h5>
@@ -193,4 +200,115 @@ function renderUserPokedex(responseStatus, responseData) {
         `;
         pokemonList.appendChild(displayItem);
     });
+    applySearch();
 }
+
+// Instant search by name or Pokédex number
+function applySearch() {
+    const input = document.getElementById("searchFilter");
+    const list = document.getElementById("pokemonList");
+    if (!input || !list) return;
+    const query = input.value.trim().toLowerCase().replace(/^#/, "");
+    let shownCount = 0;
+    list.querySelectorAll("[data-id]").forEach(item => {
+        const match = !query
+            || item.dataset.name.includes(query)
+            || item.dataset.id === String(parseInt(query, 10));
+        item.classList.toggle("d-none", !match);
+        if (match) shownCount++;
+    });
+    let empty = list.querySelector(".search-empty");
+    if (!shownCount && list.querySelector("[data-id]")) {
+        if (!empty) {
+            empty = document.createElement("div");
+            empty.className = "empty-state search-empty";
+            list.appendChild(empty);
+        }
+        empty.textContent = `No Pokémon match "${input.value.trim()}".`;
+    } else if (empty) {
+        empty.remove();
+    }
+}
+
+// Details popup: stats and moves
+function statBar(label, value, max) {
+    return `
+      <div class="stat-row">
+        <span class="stat-label">${label}</span>
+        <span class="stat-value">${value}</span>
+        <span class="stat-track"><span style="width:${Math.min(100, (value / max) * 100)}%"></span></span>
+      </div>`;
+}
+
+function openDetails(id) {
+    const modal = document.getElementById("dexModal");
+    const body = document.getElementById("dexModalBody");
+    body.innerHTML = `<div class="skeleton" style="min-height: 320px"></div>`;
+    modal.style.display = "flex";
+
+    fetchMethod(currentUrl + `/api/pokedex/${id}/details`, (status, p) => {
+        if (status !== 200) {
+            body.innerHTML = `<div class="alert">${escapeHTML(p?.message || "Could not load this Pokémon.")}</div>`;
+            return;
+        }
+        const name = displayPokemonName(p.name);
+        const b = p.base_stats || {};
+        const total = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed"].reduce((s, k) => s + (b[k] || 0), 0);
+        body.innerHTML = `
+          <div class="dex-modal-head">
+            <img src="${getPokemonSprite(p.pokemon_id)}" alt="${escapeHTML(name)}">
+            <div>
+              <span class="dex-no-inline">${dexNumber(p.pokemon_id)}</span>
+              <h2 id="dexModalName">${escapeHTML(name)}</h2>
+              <div>${typeBadges(p.type1, p.type2)} <span class="rarity-pill rarity-${escapeHTML(p.rarity)}">${escapeHTML(p.rarity)}</span></div>
+            </div>
+          </div>
+          <h5>Base stats <span class="text-muted small">(total ${total})</span></h5>
+          <div class="stat-list">
+            ${statBar("HP", b.hp, 160)}
+            ${statBar("Attack", b.attack, 160)}
+            ${statBar("Defense", b.defense, 160)}
+            ${statBar("Sp. Atk", b.sp_attack, 160)}
+            ${statBar("Sp. Def", b.sp_defense, 160)}
+            ${statBar("Speed", b.speed, 160)}
+          </div>
+          ${p.stats ? `<p class="text-muted small">At level ${p.level} in battle: ${p.stats.hp} HP, ${p.stats.attack} Atk, ${p.stats.defense} Def, ${p.stats.sp_attack} Sp. Atk, ${p.stats.sp_defense} Sp. Def, ${p.stats.speed} Speed.</p>` : ""}
+          <h5>Moves</h5>
+          <div class="move-list">
+            ${p.moves.length ? p.moves.map(m => `
+              <div class="move-row">
+                <span class="type-badge type-${escapeHTML(String(m.type).toLowerCase())}">${escapeHTML(m.type)}</span>
+                <span class="move-row-name">${escapeHTML(m.name)}${m.priority > 0 ? ' <span class="chip brand" style="padding:1px 7px">Priority</span>' : ""}</span>
+                <span class="text-muted small">${m.power ? `PWR ${m.power}` : "Status"} · PP ${m.pp}</span>
+              </div>`).join("") : '<p class="text-muted">No moves.</p>'}
+          </div>
+        `;
+    });
+}
+
+function closeDetails() {
+    document.getElementById("dexModal").style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("searchFilter").addEventListener("input", applySearch);
+    const list = document.getElementById("pokemonList");
+    const open = e => {
+        const item = e.target.closest("[data-id]");
+        if (item && item.dataset.open) openDetails(item.dataset.id);
+    };
+    list.addEventListener("click", open);
+    list.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            open(e);
+        }
+    });
+    document.getElementById("dexModalClose").addEventListener("click", closeDetails);
+    document.getElementById("dexModal").addEventListener("click", e => {
+        if (e.target.id === "dexModal") closeDetails();
+    });
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") closeDetails();
+    });
+});

@@ -9,4 +9,7 @@ router.get('/', pokedexController.getAllPokedex);
 // 2. Get Pokédex entry by ID
 router.get('/:id', pokedexController.getPokedexById);
 
+// 3. Base stats, level 50 stats and moves
+router.get('/:id/details', pokedexController.getPokedexDetails);
+
 module.exports = router;

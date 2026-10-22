@@ -93,11 +93,17 @@ module.exports.reorderTeam = (req, res) => {
     const user_id = req.params.user_id;
     const { order } = req.body; // array of Pokémon IDs in new order
 
-    if (!Array.isArray(order) || order.length === 0) {
-        return res.status(400).json({ message: "Invalid team order." });
+    if (!Array.isArray(order) || order.length === 0 || order.length > 6) {
+        return res.status(400).json({ message: "A team needs 1 to 6 Pokémon." });
+    }
+    if (new Set(order.map(String)).size !== order.length) {
+        return res.status(400).json({ message: "A Pokémon can only be in the team once." });
     }
 
     teamModel.reorderTeam({ user_id, order }, (err) => {
+        if (err && err.code === "NOT_OWNED") {
+            return res.status(403).json({ message: "You can only use your own Pokémon." });
+        }
         if (err) return res.status(500).json({ message: "Internal server error." });
 
         return res.status(200).json({

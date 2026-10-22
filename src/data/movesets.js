@@ -86,25 +86,25 @@ const movesets = {
 
     16: [
         { name: "Gust", type: "Flying", power: 40, pp: 35 },
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 },
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 },
         { name: "Tackle", type: "Normal", power: 40, pp: 35 }
     ], // Pidgey,
 
     17: [
         { name: "Wing Attack", type: "Flying", power: 60, pp: 35 },
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 },
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 },
         { name: "Gust", type: "Flying", power: 40, pp: 35 }
     ], // Pidgeotto,
 
     18: [
         { name: "Wing Attack", type: "Flying", power: 60, pp: 35 },
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 },
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 },
         { name: "Hyper Beam", type: "Normal", power: 120, pp: 5 }
     ], // Pidgeot,
 
     19: [
         { name: "Tackle", type: "Normal", power: 40, pp: 35 },
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 },
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 },
         { name: "Hyper Fang", type: "Normal", power: 80, pp: 15 }
     ], // Rattata,
 
@@ -140,13 +140,13 @@ const movesets = {
     ], // Arbok,
 
     25: [
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 },
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 },
         { name: "Thunder Shock", type: "Electric", power: 40, pp: 30 },
         { name: "Thunderbolt", type: "Electric", power: 90, pp: 15 }
     ], // Pikachu,
 
     26: [
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 },
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 },
         { name: "Thunderbolt", type: "Electric", power: 90, pp: 15 },
         { name: "Thunder", type: "Electric", power: 110, pp: 10 }
     ], // Raichu,
@@ -220,7 +220,7 @@ const movesets = {
     38: [
         { name: "Flamethrower", type: "Fire", power: 90, pp: 15 },
         { name: "Fire Blast", type: "Fire", power: 110, pp: 5 },
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 }
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 }
     ], // Ninetales,
 
     39: [
@@ -748,7 +748,7 @@ const movesets = {
 
     133: [
         { name: "Tackle", type: "Normal", power: 40, pp: 35 },
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 }
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 }
     ], // Eevee,
 
     134: [
@@ -758,13 +758,13 @@ const movesets = {
     ], // Vaporeon,
 
     135: [
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 },
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 },
         { name: "Thunderbolt", type: "Electric", power: 90, pp: 15 },
         { name: "Thunder", type: "Electric", power: 110, pp: 10 }
     ], // Jolteon,
 
     136: [
-        { name: "Quick Attack", type: "Normal", power: 40, pp: 30 },
+        { name: "Quick Attack", type: "Normal", power: 40, pp: 30, priority: 1 },
         { name: "Flamethrower", type: "Fire", power: 90, pp: 15 },
         { name: "Fire Blast", type: "Fire", power: 110, pp: 5 }
     ], // Flareon,

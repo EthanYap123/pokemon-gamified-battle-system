@@ -12,19 +12,17 @@ router.post(
     battleController.startBattle
 );
 
-// 2. Take a turn (user selects move, gym responds)
+// 2. Take a turn (move or switch; the controller checks the battle is yours)
 router.post(
     '/:battle_id/turn',
     jwtMiddleware.verifyToken,
-    jwtMiddleware.verifyOwner,
     battleController.takeTurn
 );
 
-// 3. End battle (win/lose, rewards)
+// 3. Surrender (wins are only decided by turns)
 router.post(
     '/:battle_id/end',
     jwtMiddleware.verifyToken,
-    jwtMiddleware.verifyOwner,
     battleController.endBattle
 );
 

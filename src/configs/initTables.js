@@ -9,6 +9,7 @@ bcrypt.hash("1234", saltRounds, (err, hash) => {
   }
 
   const SQLSTATEMENT = `
+DROP TABLE IF EXISTS PullHistory;
 DROP TABLE IF EXISTS UserBadge;
 DROP TABLE IF EXISTS Badge;
 DROP TABLE IF EXISTS Battles;
@@ -28,7 +29,9 @@ CREATE TABLE User (
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   coins INT DEFAULT 0,
-  amulet_coins INT DEFAULT 0
+  amulet_coins INT DEFAULT 0,
+  pity_count INT DEFAULT 0,        -- ball pulls since the last rare or better
+  last_free_pull DATE DEFAULT NULL -- day the free daily Poke Ball was last used
 );
 
 -- Pokémon table (with type1 and type2), acts as the global pokedex, list of all 151 pokemon
@@ -110,6 +113,7 @@ CREATE TABLE Battles (
   gym_id INT NOT NULL,
   state JSON NOT NULL,
   result ENUM('win','lose') DEFAULT NULL,
+  claimed BOOLEAN DEFAULT FALSE,   -- gym rewards already paid for this win
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
   FOREIGN KEY (gym_id) REFERENCES Gym(gym_id) ON DELETE CASCADE
@@ -131,6 +135,19 @@ CREATE TABLE UserBadge (
   obtained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
   FOREIGN KEY (badge_id) REFERENCES Badge(badge_id) ON DELETE CASCADE
+);
+
+-- PullHistory table (every shop ball result)
+CREATE TABLE PullHistory (
+  pull_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  item_name VARCHAR(255) NOT NULL,
+  pokemon_id INT NOT NULL,
+  rarity VARCHAR(20) NOT NULL,
+  duplicate BOOLEAN DEFAULT FALSE,
+  pulled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (pokemon_id) REFERENCES Pokemon(pokemon_id) ON DELETE CASCADE
 );
 
 -- Base Users
@@ -318,8 +335,8 @@ INSERT INTO Badge (name, gym_id) VALUES
 
 INSERT INTO Shop (item_name, price, effect) VALUES
 ('Poke ball', 100, 'Gacha roll: 70% common, 25% uncommon, 5% rare'),
-('Great Ball', 300, 'Gacha roll: 50% common, 40% uncommon, 9% rare, 1% ultraRare'),
-('Ultra Ball', 600, 'Gacha roll: 30% common, 50% uncommon, 18% rare, 2% ultraRare'),
+('Great Ball', 300, 'Gacha roll: 50% common, 40% uncommon, 9% rare, 1% ultra rare'),
+('Ultra Ball', 600, 'Gacha roll: 30% common, 50% uncommon, 18% rare, 2% ultra rare'),
 ('Amulet Coin', 1000, 'Each amulet coin increases coin gain by 10% (cap 10)');
 
 -- Base UserBadge

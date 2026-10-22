@@ -16,6 +16,8 @@ function loadProfile() {
 
         document.getElementById("profileUsername").textContent = profile.username;
         document.getElementById("profileEmail").textContent = profile.email;
+        document.getElementById("settingsUsername").value = profile.username;
+        document.getElementById("settingsEmail").value = profile.email;
         document.getElementById("profileAvatar").textContent = (profile.username || "?").charAt(0);
         document.getElementById("profileCoins").textContent = Number(profile.coins).toLocaleString();
         document.getElementById("profileAmuletCoins").textContent = `${profile.amulet_coins}/10`;
@@ -47,7 +49,18 @@ function loadProfile() {
             }
         }, "GET", null);
 
-        // 4. Get team
+        // 4. Battle record
+        fetchMethod(currentUrl + `/api/users/${userId}/stats`, function (status, stats) {
+            if (status !== 200 || !stats) return;
+            document.getElementById("statBattles").textContent = stats.battles;
+            document.getElementById("statWinLoss").textContent = `${stats.wins} / ${stats.losses}`;
+            document.getElementById("statWinRate").textContent = stats.battles ? `${stats.win_rate}%` : "–";
+            document.getElementById("statWinRateBar").style.width = `${stats.win_rate}%`;
+            document.getElementById("statCoinsEarned").textContent = Number(stats.coins_earned).toLocaleString();
+            document.getElementById("statPulls").textContent = stats.pulls;
+        }, "GET", null);
+
+        // 5. Get team
         fetchMethod(currentUrl + `/api/team/${userId}`, function (status, data) {
             if (status === 200 && data && Array.isArray(data.team)) {
                 renderProfileTeam(data.team);
@@ -129,5 +142,49 @@ function renderProfileTeam(team) {
     }
 }
 
+// Account settings: username, email, optional new password
+function setupAccountForm() {
+    const form = document.getElementById("accountForm");
+    if (!form) return;
+
+    form.addEventListener("submit", e => {
+        e.preventDefault();
+        const userId = localStorage.getItem("userId");
+        const newPassword = document.getElementById("settingsNewPassword").value;
+        const confirmPassword = document.getElementById("settingsConfirmPassword").value;
+
+        if (newPassword !== confirmPassword) {
+            showToast("New passwords do not match.", "error");
+            return;
+        }
+
+        const body = {
+            username: document.getElementById("settingsUsername").value.trim(),
+            email: document.getElementById("settingsEmail").value.trim(),
+            currentPassword: document.getElementById("settingsCurrentPassword").value,
+        };
+        if (newPassword) body.password = newPassword;
+
+        const button = form.querySelector("button[type=submit]");
+        button.disabled = true;
+        fetchMethod(currentUrl + `/api/users/${userId}`, (status, data) => {
+            button.disabled = false;
+            if (status === 200) {
+                showToast("Account updated!");
+                document.getElementById("profileUsername").textContent = data.username;
+                document.getElementById("profileEmail").textContent = data.email;
+                document.getElementById("profileAvatar").textContent = data.username.charAt(0);
+                ["settingsNewPassword", "settingsConfirmPassword", "settingsCurrentPassword"]
+                    .forEach(id => (document.getElementById(id).value = ""));
+            } else {
+                showToast(data?.message || "Could not update your account.", "error");
+            }
+        }, "PUT", body);
+    });
+}
+
 // Init
-document.addEventListener("DOMContentLoaded", loadProfile);
+document.addEventListener("DOMContentLoaded", () => {
+    loadProfile();
+    setupAccountForm();
+});

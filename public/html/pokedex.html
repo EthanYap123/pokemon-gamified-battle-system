@@ -52,6 +52,10 @@
         </div>
 
         <div class="filter-bar">
+          <label for="searchFilter" class="search-label">Search
+            <input id="searchFilter" type="search" placeholder="Name or number" autocomplete="off" />
+          </label>
+
           <!-- View toggle (hidden by default, shown only if logged in) -->
           <label id="filterContainer" class="d-none" for="filterToggle">View
             <select id="filterToggle">
@@ -107,6 +111,14 @@
         <div id="pokemonList" class="row"></div>
       </div>
     </main>
+
+    <!-- Pokédex entry details -->
+    <div id="dexModal" class="popup" role="dialog" aria-modal="true" aria-labelledby="dexModalName">
+      <div class="popup-content dex-modal">
+        <button class="modal-close" id="dexModalClose" aria-label="Close">×</button>
+        <div id="dexModalBody"></div>
+      </div>
+    </div>
 
     <!-- Project JS -->
     <script src="../js/queryCmds.js"></script>
