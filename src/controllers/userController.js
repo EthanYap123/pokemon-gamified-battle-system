@@ -1,4 +1,8 @@
+const bcrypt = require("bcrypt");
 const userModel = require("../models/userModel.js");
+const battleModel = require("../models/battleModel.js");
+
+const SALT_ROUNDS = 10;
 
 // Task 1 - Post 
 module.exports.createNewUser = (req, res, next) => {
@@ -13,7 +17,7 @@ module.exports.createNewUser = (req, res, next) => {
   const data = {
     username: req.body.username,
     email: req.body.email,
-    password: req.body.password
+    password: null // set to the bcrypt hash below, never the plain password
   };
 
   const callback = (error, results) => {
@@ -33,7 +37,14 @@ module.exports.createNewUser = (req, res, next) => {
     });
   };
 
-  userModel.insertSingle(data, callback);
+  bcrypt.hash(req.body.password, SALT_ROUNDS, (hashError, hash) => {
+    if (hashError) {
+      console.error("Error hashing password:", hashError);
+      return res.status(500).json({ message: "Internal server error." });
+    }
+    data.password = hash;
+    userModel.insertSingle(data, callback);
+  });
 };
 
 // Task 2 - Get
@@ -72,43 +83,102 @@ module.exports.readUserById = (req, res, next) => {
   userModel.selectById(data, callback);
 };
 
-// Task 4 - PUT
+// Task 4 - PUT: change username, email and (optionally) password.
+// Coins and Amulet Coins can only change through gameplay.
 module.exports.updateUserById = (req, res, next) => {
   if (!authenticateUser(req, res)) return;
 
+  const { username, email, password, currentPassword } = req.body;
+
   // Validate required fields
-  if (!req.body.username || req.body.username.length === 0 ||
-      !req.body.email || req.body.email.length === 0 ||
-      !req.body.password || req.body.password.length === 0) {
-    return res.status(400).json({ message: "Invalid or missing fields." });
+  if (!username || !String(username).trim() || !email || !String(email).trim()) {
+    return res.status(400).json({ message: "Username and email are required." });
+  }
+  if (!currentPassword) {
+    return res.status(400).json({ message: "Enter your current password to save changes." });
   }
 
-  const data = {
-    user_id: req.params.user_id,
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password,
-    coins: req.body.coins || 0,          // ✅ include coins
-    amulet_coins: req.body.amulet_coins || 0 // optional if you want to update amulet coins too
-  };
+  const user_id = req.params.user_id;
 
-  userModel.updateById(data, (error, results) => {
+  userModel.selectPasswordHash({ user_id }, (error, rows) => {
     if (error) {
       console.error("Error updateUserById:", error);
       return res.status(500).json({ message: "Internal server error." });
     }
-    if (results.affectedRows === 0) {
-      return res.status(404).json({ message: "User not found or duplicate username/email exists." });
-    }
+    if (rows.length === 0) return res.status(404).json({ message: "User not found." });
 
-    return res.status(200).json({
-      user_id: data.user_id,
-      username: data.username,
-      email: data.email,
-      coins: data.coins,
-      amulet_coins: data.amulet_coins
+    bcrypt.compare(String(currentPassword), rows[0].password, (compareError, isMatch) => {
+      if (compareError) {
+        console.error("Error comparing password:", compareError);
+        return res.status(500).json({ message: "Internal server error." });
+      }
+      // 403 rather than 401 so the page does not treat it as an expired login
+      if (!isMatch) return res.status(403).json({ message: "Current password is incorrect." });
+
+      const save = (newHash) => {
+        const data = { user_id, username: String(username).trim(), email: String(email).trim(), password: newHash };
+        userModel.updateById(data, (updateError, results) => {
+          if (updateError) {
+            console.error("Error updateUserById:", updateError);
+            return res.status(500).json({ message: "Internal server error." });
+          }
+          if (results.affectedRows === 0) {
+            return res.status(409).json({ message: "That username or email is already taken." });
+          }
+          return res.status(200).json({
+            user_id: Number(user_id),
+            username: data.username,
+            email: data.email,
+            message: "Account updated."
+          });
+        });
+      };
+
+      if (password) {
+        bcrypt.hash(String(password), SALT_ROUNDS, (hashError, hash) => {
+          if (hashError) {
+            console.error("Error hashing password:", hashError);
+            return res.status(500).json({ message: "Internal server error." });
+          }
+          save(hash);
+        });
+      } else {
+        save(null); // keep the current password
+      }
     });
   });
+};
+
+// Profile stats: battle record, coins earned, pulls
+module.exports.readUserStats = (req, res, next) => {
+  if (!authenticateUser(req, res)) return;
+  const user_id = req.params.user_id;
+
+  Promise.all([battleModel.getRecord(user_id), userModel.selectStats(user_id)])
+    .then(([record, stats]) => {
+      const battles = record.wins + record.losses;
+      res.status(200).json({
+        battles,
+        wins: record.wins,
+        losses: record.losses,
+        win_rate: battles ? Math.round((record.wins / battles) * 100) : 0,
+        ...stats
+      });
+    })
+    .catch(error => {
+      console.error("Error readUserStats:", error);
+      res.status(500).json({ message: "Internal server error." });
+    });
+};
+
+// Leaderboard: badges, Pokémon caught and coins for every trainer
+module.exports.readLeaderboard = (req, res, next) => {
+  userModel.selectLeaderboard()
+    .then(rows => res.status(200).json(rows))
+    .catch(error => {
+      console.error("Error readLeaderboard:", error);
+      res.status(500).json({ message: "Internal server error." });
+    });
 };
 
 // Extra
