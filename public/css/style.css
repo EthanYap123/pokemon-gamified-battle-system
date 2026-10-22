@@ -1307,6 +1307,212 @@ select {
   height: 100%;
 }
 
+.buy-row {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.shop-card .buy-row .btn-buy {
+  flex: 1;
+  margin: 0;
+  padding: 11px 8px;
+}
+
+.btn-multi {
+  background: var(--ink);
+  font-size: 0.82rem;
+}
+
+.btn-multi:hover {
+  background: #2a2f45;
+}
+
+.shop-status {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: stretch;
+  margin: -10px 0 22px;
+}
+
+.pity-box {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.pity-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.pity-head b {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+#pityBar {
+  background: linear-gradient(90deg, var(--rarity-rare), var(--rarity-ultra));
+}
+
+.daily-btn img {
+  width: 30px;
+  height: 30px;
+  margin: -6px 0;
+  image-rendering: pixelated;
+}
+
+.daily-btn.ready {
+  background: var(--gold-soft);
+  box-shadow: inset 0 0 0 1px #f3df9b;
+  animation: glow 2s ease-in-out infinite;
+}
+
+.daily-btn.ready img {
+  animation: wobble 1.6s ease-in-out infinite;
+}
+
+@media (max-width: 600px) {
+  .shop-status {
+    grid-template-columns: 1fr;
+  }
+}
+
+.history-list {
+  display: grid;
+  gap: 8px;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--r, var(--line));
+}
+
+.history-row img {
+  width: 44px;
+  height: 44px;
+  image-rendering: pixelated;
+}
+
+.history-name {
+  font-weight: 700;
+  min-width: 110px;
+}
+
+.history-row .rarity-pill {
+  margin: 0;
+}
+
+.history-meta {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* 10-pull reveal */
+.gacha-card.multi {
+  width: min(560px, 100%);
+}
+
+.gacha-card.multi::before {
+  top: 50%;
+  width: 640px;
+  height: 640px;
+}
+
+.multi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+
+.multi-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 104px;
+  padding: 6px 4px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 2px solid var(--line);
+}
+
+.multi-slot .gacha-ball {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+}
+
+.multi-slot.open {
+  border-color: var(--r, var(--line));
+  background: color-mix(in srgb, var(--r, #fff) 10%, var(--surface));
+  animation: pop-in 0.35s var(--ease) both;
+}
+
+.multi-slot.open.rarity-rare,
+.multi-slot.open.rarity-ultra {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--r) 30%, transparent), 0 0 18px color-mix(in srgb, var(--r) 50%, transparent);
+}
+
+.multi-slot.dupe {
+  opacity: 0.6;
+}
+
+.multi-slot .gacha-mon {
+  width: 64px;
+  height: 64px;
+  margin: 0;
+  filter: none;
+}
+
+.multi-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  line-height: 1.2;
+}
+
+.multi-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--r, var(--muted));
+}
+
+.multi-summary {
+  min-height: 46px;
+}
+
+@media (max-width: 480px) {
+  .multi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: inset 0 0 0 1px #f3df9b, 0 0 0 0 rgba(245, 183, 0, 0.35); }
+  50% { box-shadow: inset 0 0 0 1px #f3df9b, 0 0 0 6px rgba(245, 183, 0, 0); }
+}
+
 /* Gacha reveal */
 .gacha-popup {
   position: fixed;
@@ -2075,6 +2281,186 @@ select {
 .move-btn.type-dark { --t: #4c4558; }
 .move-btn.type-steel { --t: #4f8799; }
 .move-btn.type-fairy { --t: #d47fc8; }
+
+.battle-card .lv {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.action-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.action-tabs button {
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(245, 246, 250, 0.65);
+  box-shadow: none;
+}
+
+.action-tabs button:hover {
+  transform: none;
+  box-shadow: none;
+  color: #fff;
+}
+
+.action-tabs button.active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.priority-tag {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.party-list {
+  display: grid;
+  gap: 6px;
+  max-height: 230px;
+  overflow-y: auto;
+}
+
+.party-btn {
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  text-align: left;
+}
+
+.party-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.party-btn:disabled {
+  opacity: 0.5;
+}
+
+.party-btn img {
+  width: 44px;
+  height: 44px;
+  image-rendering: pixelated;
+  flex: none;
+}
+
+.party-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.party-name {
+  font-size: 0.88rem;
+}
+
+.party-name small {
+  opacity: 0.6;
+  font-weight: 600;
+}
+
+.party-info .hp-bar {
+  display: block;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.party-info .hp-fill {
+  display: block;
+}
+
+.party-hp {
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+/* Attack effects */
+.fx-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.projectile {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 0 18px 6px currentColor, inset 0 0 0 3px rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.8);
+  transition: transform 0.38s cubic-bezier(0.5, 0, 0.75, 0);
+}
+
+.projectile.burst {
+  animation: burst 0.35s ease-out forwards;
+}
+
+.float-text {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), 0 0 10px rgba(0, 0, 0, 0.25);
+  animation: float-up 1.4s var(--ease) forwards;
+}
+
+.float-text.super {
+  color: #ffd23f;
+  font-size: 1.3rem;
+}
+
+.float-text.crit {
+  color: #ff7a59;
+  font-size: 1.3rem;
+}
+
+.float-text.muted {
+  color: #e6e9f2;
+  font-size: 1rem;
+}
+
+.battle-log p.highlight {
+  color: #ffd23f;
+}
+
+@keyframes burst {
+  to { scale: 2.6; opacity: 0; }
+}
+
+@keyframes float-up {
+  0% { opacity: 0; translate: 0 10px; }
+  15% { opacity: 1; translate: 0 0; }
+  80% { opacity: 1; }
+  100% { opacity: 0; translate: 0 -30px; }
+}
 
 #surrenderBtn {
   margin-top: auto;

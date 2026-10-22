@@ -53,7 +53,7 @@
             <!-- Opponent -->
             <div class="battle-card" id="opponentCard">
               <div class="info-box">
-                <h3><span id="opponentPokemonName">—</span><span class="leader-label" id="opponentName">Gym Leader</span></h3>
+                <h3><span><span id="opponentPokemonName">—</span> <small class="lv" id="opponentLevel"></small></span><span class="leader-label" id="opponentName">Gym Leader</span></h3>
                 <div class="team-dots" id="opponentDots"></div>
                 <div class="hp-row">HP<div class="hp-bar"><div class="hp-fill" id="opponentHp"></div></div></div>
               </div>
@@ -64,12 +64,15 @@
             <img id="userSprite" class="battle-sprite" src="" alt="Your Pokémon" />
             <div class="battle-card" id="userCard">
               <div class="info-box">
-                <h3><span id="userPokemonName">—</span><span class="leader-label">You</span></h3>
+                <h3><span><span id="userPokemonName">—</span> <small class="lv" id="userLevel"></small></span><span class="leader-label">You</span></h3>
                 <div class="team-dots" id="userDots"></div>
                 <div class="hp-row">HP<div class="hp-bar"><div class="hp-fill" id="userHp"></div></div></div>
                 <div class="hp-text" id="userHpText"></div>
               </div>
             </div>
+
+            <!-- Attack effects and floating messages -->
+            <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
 
             <div class="battle-loading" id="battleLoading">
               <div><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="" />Starting battle...</div>
@@ -82,9 +85,16 @@
 
             <!-- Controls -->
             <div class="battle-actions">
-              <span class="label">Choose a move</span>
+              <div class="action-tabs" role="tablist">
+                <button id="tabFight" class="active" role="tab" aria-selected="true">Fight</button>
+                <button id="tabParty" role="tab" aria-selected="false">Pokémon</button>
+              </div>
+              <span class="label" id="actionLabel">Choose a move</span>
               <div class="moves" id="moveButtons">
                 <!-- Move buttons injected dynamically -->
+              </div>
+              <div class="party-list d-none" id="partyList">
+                <!-- Switch buttons injected dynamically -->
               </div>
               <button id="surrenderBtn">Surrender</button>
             </div>

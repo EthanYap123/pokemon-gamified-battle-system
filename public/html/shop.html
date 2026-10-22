@@ -51,7 +51,22 @@
           <p>Throw a ball to catch a random Pokémon, or boost your coin rewards with Amulet Coins.</p>
         </div>
         <div id="userBalance" class="balance-bar"></div>
+        <div id="shopStatus" class="shop-status d-none">
+          <div class="pity-box" tabindex="0" data-tip="Every ball pull without a rare or better adds 1. When the bar fills, your next pull is a guaranteed rare. It resets whenever you get a rare.">
+            <div class="pity-head"><span>Rare guarantee</span><b id="pityText"></b></div>
+            <div class="progress"><div id="pityBar"></div></div>
+          </div>
+          <button id="dailyBtn" class="btn btn-ghost daily-btn">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="" />
+            <span id="dailyText">Free daily Poké Ball</span>
+          </button>
+        </div>
         <div id="shopList" class="row"></div>
+
+        <section class="section d-none" id="historySection">
+          <div class="section-title"><h2>Recent pulls</h2><span>Last 20</span></div>
+          <div id="pullHistory" class="history-list"></div>
+        </section>
       </div>
     </main>
 
