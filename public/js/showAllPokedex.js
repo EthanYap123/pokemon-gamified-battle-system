@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const userId = localStorage.getItem("userId");
     const filterContainer = document.getElementById("filterContainer");
 
+    showLoading();
     if (token && userId) {
         // Logged in → show dropdown + user Pokédex
         if (filterContainer) filterContainer.classList.remove("d-none");
@@ -17,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterToggle = document.getElementById("filterToggle");
     if (filterToggle && token && userId) {
         filterToggle.addEventListener("change", (e) => {
+            showLoading();
             if (e.target.value === "global") {
                 fetchMethod(currentUrl + "/api/pokedex", renderGlobalPokedex);
             } else {
@@ -32,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const type = document.getElementById("typeFilter").value;
             const rarity = document.getElementById("rarityFilter").value;
 
+            showLoading();
             // If logged in, check toggle value
             if (token && userId && filterToggle && filterToggle.value === "user") {
                 // User Pokédex filter (only obtained Pokémon)
@@ -54,10 +57,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+function showLoading() {
+    const pokemonList = document.getElementById("pokemonList");
+    if (pokemonList) pokemonList.innerHTML = '<div class="skeleton"></div>'.repeat(12);
+}
+
+function dexNumber(id) {
+    return "#" + String(id).padStart(3, "0");
+}
+
+function typeBadges(type1, type2) {
+    return `
+        <span class="type-badge type-${escapeHTML(type1)}">${escapeHTML(type1)}</span>
+        ${type2 ? `<span class="type-badge type-${escapeHTML(type2)}">${escapeHTML(type2)}</span>` : ""}
+    `;
+}
+
+function showEmpty(pokemonList) {
+    pokemonList.innerHTML = `<div class="empty-state">No Pokémon match these filters.</div>`;
+}
+
 // Render global Pokédex
 function renderGlobalPokedex(responseStatus, responseData) {
     const pokemonList = document.getElementById("pokemonList");
     pokemonList.innerHTML = "";
+    document.getElementById("dexProgress").classList.add("d-none");
 
     if (responseStatus !== 200 || !Array.isArray(responseData)) {
         const errorMsg = document.createElement("div");
@@ -68,21 +92,20 @@ function renderGlobalPokedex(responseStatus, responseData) {
         return;
     }
 
+    if (responseData.length === 0) return showEmpty(pokemonList);
+
     responseData.forEach((pokemon) => {
         const spriteURL = getPokemonSprite(pokemon.pokemon_id);
         const displayItem = document.createElement("div");
-        displayItem.className = "col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12";
+        const name = displayPokemonName(pokemon.name);
 
         displayItem.innerHTML = `
       <div class="pokemon-card">
-        <img src="${spriteURL}" alt="${pokemon.name}">
-        <h5>${pokemon.name}</h5>
-        <p>ID: ${pokemon.pokemon_id}</p>
-        <div>
-          <span class="type-badge type-${pokemon.type1}">${pokemon.type1}</span>
-          ${pokemon.type2 ? `<span class="type-badge type-${pokemon.type2}">${pokemon.type2}</span>` : ""}
-        </div>
-        <p class="text-muted small">Rarity: ${pokemon.rarity}</p>
+        <span class="dex-no">${dexNumber(pokemon.pokemon_id)}</span>
+        <img src="${spriteURL}" alt="${escapeHTML(name)}" loading="lazy">
+        <h5>${escapeHTML(name)}</h5>
+        <div>${typeBadges(pokemon.type1, pokemon.type2)}</div>
+        <span class="rarity-pill rarity-${escapeHTML(pokemon.rarity)}">${escapeHTML(pokemon.rarity)}</span>
       </div>
     `;
         pokemonList.appendChild(displayItem);
@@ -135,30 +158,37 @@ function renderUserPokedex(responseStatus, responseData) {
     // Normalize to array of Pokémon entries
     const pokedexEntries = Array.isArray(responseData) ? responseData : responseData.pokedex;
 
+    // Caught counter (only meaningful for the full, unfiltered list)
+    const progress = document.getElementById("dexProgress");
+    if (pokedexEntries.length >= 151) {
+        const caught = pokedexEntries.filter(p => Boolean(p.obtained)).length;
+        document.getElementById("dexProgressText").textContent = `${caught} / ${pokedexEntries.length} caught`;
+        progress.classList.remove("d-none");
+        requestAnimationFrame(() => {
+            document.getElementById("dexProgressBar").style.width = `${(caught / pokedexEntries.length) * 100}%`;
+        });
+    } else {
+        progress.classList.add("d-none");
+    }
+
+    if (pokedexEntries.length === 0) return showEmpty(pokemonList);
+
     pokedexEntries.forEach((pokemon) => {
         const spriteURL = getPokemonSprite(pokemon.pokemon_id);
         const displayItem = document.createElement("div");
-        displayItem.className = "col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12";
 
         const discovered = Boolean(pokemon.obtained);
         const imgClass = discovered ? "" : "greyed-out";
 
-        const nameDisplay = discovered ? pokemon.name : "???";
-        const idDisplay = discovered ? pokemon.pokemon_id : "???";
-        const type1Display = discovered ? pokemon.type1 : "???";
-        const type2Display = discovered && pokemon.type2 ? pokemon.type2 : "";
-        const rarityDisplay = discovered ? pokemon.rarity : "???";
+        const nameDisplay = discovered ? displayPokemonName(pokemon.name) : "???";
 
         displayItem.innerHTML = `
-          <div class="pokemon-card">
-            <img src="${spriteURL}" alt="${nameDisplay}" class="${imgClass}">
-            <h5>${nameDisplay}</h5>
-            <p>ID: ${idDisplay}</p>
-            <div>
-              <span class="type-badge ${discovered ? `type-${type1Display}` : ""}">${type1Display}</span>
-              ${type2Display ? `<span class="type-badge ${discovered ? `type-${type2Display}` : ""}">${type2Display}</span>` : ""}
-            </div>
-            <p class="text-muted small">Rarity: ${rarityDisplay}</p>
+          <div class="pokemon-card ${discovered ? "" : "undiscovered"}">
+            <span class="dex-no">${dexNumber(pokemon.pokemon_id)}</span>
+            <img src="${spriteURL}" alt="${escapeHTML(nameDisplay)}" class="${imgClass}" loading="lazy">
+            <h5>${escapeHTML(nameDisplay)}</h5>
+            <div>${discovered ? typeBadges(pokemon.type1, pokemon.type2) : '<span class="type-badge">???</span>'}</div>
+            ${discovered ? `<span class="rarity-pill rarity-${escapeHTML(pokemon.rarity)}">${escapeHTML(pokemon.rarity)}</span>` : ""}
           </div>
         `;
         pokemonList.appendChild(displayItem);

@@ -4,13 +4,15 @@ const pool = require('../services/db');
 module.exports.addStarter = (data, callback) => {
     const { user_id, pokemon_id } = data;
 
-    const SQL1 = `INSERT INTO UserPokemon (user_id, pokemon_id) VALUES (?, ?);`;
+    const SQL1 = `
+        INSERT INTO UserPokemon (user_id, pokemon_id, rarity)
+        SELECT ?, pokemon_id, rarity FROM Pokemon WHERE pokemon_id = ?;
+    `;
     pool.query(SQL1, [user_id, pokemon_id], (err1, result1) => {
         if (err1) {
             console.error("SQL1 failed (UserPokemon insert):", err1);
             return callback(err1);
         }
-        console.log("SQL1 success (UserPokemon insert):", result1);
 
         const userPokemonId = result1.insertId;
 
@@ -24,7 +26,6 @@ module.exports.addStarter = (data, callback) => {
                 console.error("SQL2 failed (UserPokedex insert/update):", err2);
                 return callback(err2);
             }
-            console.log("SQL2 success (UserPokedex insert/update):", result2);
 
             const SQL3 = `INSERT INTO Team (user_id, slot, user_pokemon_id) VALUES (?, 1, ?);`;
             pool.query(SQL3, [user_id, userPokemonId], (err3, result3) => {
@@ -32,7 +33,6 @@ module.exports.addStarter = (data, callback) => {
                     console.error("SQL3 failed (Team insert):", err3);
                     return callback(err3);
                 }
-                console.log("SQL3 success (Team insert):", result3);
                 callback(null, result3);
             });
         });

@@ -184,6 +184,8 @@ module.exports.takeTurn = (req, res) => {
     battleModel.getBattleState(battle_id, (err, battleData) => {
         if (err) return res.status(500).json({ message: "Internal server error." });
         if (!battleData) return res.status(404).json({ message: "Battle not found" });
+        if (battleData.user_id !== res.locals.userId) return res.status(403).json({ message: "Forbidden: Not your battle" });
+        if (battleData.result) return res.status(400).json({ message: "This battle has already finished." });
 
         const state = battleData.state;
 
@@ -382,7 +384,6 @@ module.exports.getBattleState = (req, res) => {
             return res.status(500).json({ message: "Internal server error." });
         }
         if (!battleData) {
-            console.warn("!!! [getBattleState] Battle not found:", battle_id);
             return res.status(404).json({ message: "Battle not found" });
         }
 

@@ -2,11 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
     <link href="../css/style.css" rel="stylesheet" />
     <link href="../css/color.css" rel="stylesheet" />
-    <title>Badges</title>
+    <title>Badges · PokéBattle</title>
     <link
       rel="icon"
       type="image/png"
@@ -18,7 +20,8 @@
     <nav class="navbar">
       <div class="navbar-left">
         <a href="index.html">
-          <img id="logo" class="logo" alt="Logo" />
+          <img id="logo" class="logo" alt="" />
+          <span class="brand-name">PokéBattle</span>
         </a>
         <a href="index.html">Home</a>
         <a href="users.html">Users</a>
@@ -41,8 +44,20 @@
 
     <!-- Main Content -->
     <main>
-      <div class="container text-center">
-        <h1 class="text-center">Badges</h1>
+      <div class="container">
+        <div class="page-header">
+          <span class="eyebrow">Kanto League</span>
+          <h1>Badges</h1>
+          <p>All nine badges in the league. Pick a trainer to see the badges they have earned.</p>
+        </div>
+
+        <div class="filter-bar">
+          <label for="userFilter">Trainer
+            <select id="userFilter">
+              <option value="">All Users</option>
+            </select>
+          </label>
+        </div>
 
         <!-- Badge Cards Container -->
         <div id="badgeContainer" class="row"></div>

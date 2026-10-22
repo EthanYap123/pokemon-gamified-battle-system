@@ -37,7 +37,6 @@ module.exports.getUserPokedex = (req, res) => {
         const alreadyHasMew = resultsHas.length > 0 && resultsHas[0].obtained === 1;
 
         if (!alreadyHasMew && obtainedCount === TOTAL_POKEMON) {
-          console.log("🌟 Pokédex complete! Awarding Mew...");
 
           const SQLMew = `
             INSERT INTO UserPokemon (user_id, pokemon_id, rarity)
@@ -58,7 +57,6 @@ module.exports.getUserPokedex = (req, res) => {
               if (errDex) {
                 console.error("❌ DB error updating Pokédex with Mew:", errDex);
               }
-              console.log("✅ Mew awarded to Pokédex completionist!");
               return res.status(200).json({
                 pokedex: results,
                 mew_awarded: true,

@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
   const callback = (responseStatus, responseData) => {
-    console.log("responseStatus:", responseStatus);
-    console.log("responseData:", responseData);
 
     // Guard: only proceed if login was successful
     if (responseStatus === 200 && responseData?.token) {
@@ -25,11 +23,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
+  // Came here because the session expired
+  if (new URLSearchParams(window.location.search).has("expired")) {
+    const expiredCard = document.getElementById("expiredCard");
+    if (expiredCard) expiredCard.classList.remove("d-none");
+  }
+
   const loginForm = document.getElementById("loginForm");
 
   if (loginForm) {
     loginForm.addEventListener("submit", function (event) {
-      console.log("loginForm.addEventListener");
       event.preventDefault();
 
       const username = document.getElementById("username").value;

@@ -2,11 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
     <link href="../css/style.css" rel="stylesheet" />
     <link href="../css/color.css" rel="stylesheet" />
-    <title>Pokedex</title>
+    <title>Pokédex · PokéBattle</title>
     <link
       rel="icon"
       type="image/png"
@@ -18,7 +20,8 @@
     <nav class="navbar">
       <div class="navbar-left">
         <a href="index.html">
-          <img id="logo" class="logo" alt="Logo" />
+          <img id="logo" class="logo" alt="" />
+          <span class="brand-name">PokéBattle</span>
         </a>
         <a href="index.html">Home</a>
         <a href="users.html">Users</a>
@@ -42,53 +45,63 @@
     <!-- Main Content -->
     <main>
       <div class="container">
-        <h1 class="text-center">Pokedex</h1>
-
-        <!-- View toggle (hidden by default, shown only if logged in) -->
-        <div id="filterContainer" class="text-center mb-3 d-none">
-          <label for="filterToggle"><strong>View:</strong></label>
-          <select id="filterToggle">
-            <option value="user">My Pokedex</option>
-            <option value="global">Global Pokedex</option>
-          </select>
+        <div class="page-header">
+          <span class="eyebrow">Kanto region</span>
+          <h1>Pokédex</h1>
+          <p>Every Pokémon in the region. Catch them to fill in your entries.</p>
         </div>
 
-        <!-- Unified filter options (apply to both views) -->
-        <div id="filterOptions" class="text-center mb-3">
-          <label for="typeFilter"><strong>Type:</strong></label>
-          <select id="typeFilter">
-            <option value="">Any</option>
-            <option value="fire">Fire</option>
-            <option value="water">Water</option>
-            <option value="electric">Electric</option>
-            <option value="grass">Grass</option>
-            <option value="poison">Poison</option>
-            <option value="psychic">Psychic</option>
-            <option value="fighting">Fighting</option>
-            <option value="rock">Rock</option>
-            <option value="ground">Ground</option>
-            <option value="ice">Ice</option>
-            <option value="dragon">Dragon</option>
-            <option value="dark">Dark</option>
-            <option value="ghost">Ghost</option>
-            <option value="bug">Bug</option>
-            <option value="normal">Normal</option>
-            <option value="fairy">Fairy</option>
-            <option value="steel">Steel</option>
-            <option value="flying">Flying</option>
-          </select>
+        <div class="filter-bar">
+          <!-- View toggle (hidden by default, shown only if logged in) -->
+          <label id="filterContainer" class="d-none" for="filterToggle">View
+            <select id="filterToggle">
+              <option value="user">My Pokédex</option>
+              <option value="global">Global Pokédex</option>
+            </select>
+          </label>
 
-          <label for="rarityFilter"><strong>Rarity:</strong></label>
-          <select id="rarityFilter">
-            <option value="">Any</option>
-            <option value="common">Common</option>
-            <option value="uncommon">Uncommon</option>
-            <option value="rare">Rare</option>
-            <option value="ultra">Ultra</option>
-            <option value="legendary">Legendary</option>
-          </select>
+          <!-- Unified filter options (apply to both views) -->
+          <label for="typeFilter">Type
+            <select id="typeFilter">
+              <option value="">Any</option>
+              <option value="fire">Fire</option>
+              <option value="water">Water</option>
+              <option value="electric">Electric</option>
+              <option value="grass">Grass</option>
+              <option value="poison">Poison</option>
+              <option value="psychic">Psychic</option>
+              <option value="fighting">Fighting</option>
+              <option value="rock">Rock</option>
+              <option value="ground">Ground</option>
+              <option value="ice">Ice</option>
+              <option value="dragon">Dragon</option>
+              <option value="dark">Dark</option>
+              <option value="ghost">Ghost</option>
+              <option value="bug">Bug</option>
+              <option value="normal">Normal</option>
+              <option value="fairy">Fairy</option>
+              <option value="steel">Steel</option>
+              <option value="flying">Flying</option>
+            </select>
+          </label>
+
+          <label for="rarityFilter">Rarity
+            <select id="rarityFilter">
+              <option value="">Any</option>
+              <option value="common">Common</option>
+              <option value="uncommon">Uncommon</option>
+              <option value="rare">Rare</option>
+              <option value="ultra">Ultra</option>
+              <option value="legendary">Legendary</option>
+            </select>
+          </label>
 
           <button id="applyFilter">Apply Filter</button>
+        </div>
+
+        <div id="dexProgress" class="dex-progress d-none">
+          <span id="dexProgressText"></span>
+          <div class="progress"><div id="dexProgressBar"></div></div>
         </div>
 
         <div id="pokemonList" class="row"></div>

@@ -1,6 +1,4 @@
 const callback = (responseStatus, responseData) => {
-    console.log("responseStatus:", responseStatus);
-    console.log("responseData:", responseData);
 
     const pokemonList = document.getElementById("pokemonList");
     pokemonList.innerHTML = ""; // clear any existing content
@@ -15,20 +13,27 @@ const callback = (responseStatus, responseData) => {
         return;
     }
 
+    if (responseData.length === 0) {
+        pokemonList.innerHTML = `<div class="empty-state">No trainer has caught a Pokémon yet.</div>`;
+        return;
+    }
+
     // Render each user-owned Pokémon card
     responseData.forEach((pokemon) => {
         const displayItem = document.createElement("div");
-        displayItem.className = "col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12";
 
         const spriteURL = getPokemonSprite(pokemon.pokemon_id);
+        const name = displayPokemonName(pokemon.pokemon_name);
+        const obtained = String(pokemon.obtained_at || "").slice(0, 10);
 
         displayItem.innerHTML = `
       <div class="pokemon-card">
-        <img src="${spriteURL}" alt="Sprite of ${pokemon.pokemon_name}">
-        <h5>${pokemon.pokemon_name}</h5>
-        <p>ID: ${pokemon.pokemon_id}</p>
-        <p class="text-muted small">Owned by: ${pokemon.username} (User ID: ${pokemon.user_id})</p>
-        <p class="text-muted small">Obtained On: ${pokemon.obtained_at}</p>
+        <span class="dex-no">#${String(pokemon.pokemon_id).padStart(3, "0")}</span>
+        <img src="${spriteURL}" alt="Sprite of ${escapeHTML(name)}" loading="lazy">
+        <h5>${escapeHTML(name)}</h5>
+        <span class="rarity-pill rarity-${escapeHTML(pokemon.rarity)}">${escapeHTML(pokemon.rarity)}</span>
+        <p style="margin-top: 8px">Trainer <strong>${escapeHTML(pokemon.username)}</strong></p>
+        <p class="text-muted small">Caught ${escapeHTML(obtained)}</p>
       </div>
     `;
 
@@ -37,4 +42,5 @@ const callback = (responseStatus, responseData) => {
 };
 
 // Fetch data from backend API (userpokemon table)
+document.getElementById("pokemonList").innerHTML = '<div class="skeleton"></div>'.repeat(12);
 fetchMethod(currentUrl + "/api/pokemon", callback);

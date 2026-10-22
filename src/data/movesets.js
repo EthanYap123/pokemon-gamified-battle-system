@@ -1,4 +1,4 @@
-export const movesets = {
+const movesets = {
     1: [
         { name: "Tackle", type: "Normal", power: 40, pp: 35 },
         { name: "Vine Whip", type: "Grass", power: 45, pp: 25 },
@@ -855,3 +855,5 @@ export const movesets = {
         { name: "Hyper Beam", type: "Normal", power: 120, pp: 5 }
     ] // Mew
 };
+
+module.exports = { movesets };

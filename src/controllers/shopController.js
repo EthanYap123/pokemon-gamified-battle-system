@@ -71,7 +71,6 @@ module.exports.purchaseItem = (req, res) => {
     const { item_id } = req.body;
     const user_id = req.params.user_id;
 
-    console.log("DEBUG purchaseItem called:", { user_id, item_id });
 
     if (!item_id) {
         return res.status(400).json({ message: "Error: item_id missing" });
@@ -96,7 +95,6 @@ module.exports.purchaseItem = (req, res) => {
                 if (err3) return res.status(500).json({ message: "Internal server error." });
 
                 const amuletsBefore = amuletResults[0].count;
-                console.log("DEBUG balances before purchase:", { coinsBefore, amuletsBefore });
 
                 if (coinsBefore < price) {
                     return res.status(403).json({ message: "Not enough coins." });
@@ -123,7 +121,6 @@ module.exports.purchaseItem = (req, res) => {
                                 amulet_coins_before: amuletsBefore,
                                 amulet_coins_after: amuletsBefore + 1
                             };
-                            console.log("DEBUG response payload (amulet):", responsePayload);
 
                             return res.status(201).json(responsePayload);
                         });

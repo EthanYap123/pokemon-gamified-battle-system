@@ -3,9 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
     <link href="../css/style.css" rel="stylesheet" />
     <link href="../css/color.css" rel="stylesheet" />
-    <title>Home</title>
+    <title>Home · PokéBattle</title>
     <link
       rel="icon"
       type="image/png"
@@ -17,7 +20,8 @@
     <nav class="navbar">
       <div class="navbar-left">
         <a href="index.html">
-          <img id="logo" class="logo" alt="Logo" />
+          <img id="logo" class="logo" alt="" />
+          <span class="brand-name">PokéBattle</span>
         </a>
         <a href="index.html" class="active">Home</a>
         <a href="users.html">Users</a>
@@ -40,116 +44,92 @@
 
     <!-- Main Content -->
     <main>
-      <div class="container text-center">
-        <!-- Welcome Text -->
-        <h1 id="welcomeHeading">Welcome!</h1>
-        <p id="welcomeSubtext" style="margin-top: 10px; font-size: 1.1rem">
-          Your adventure begins here. Follow the steps below to become a
-          Champion!
-        </p>
+      <div class="container">
+        <!-- Hero -->
+        <section class="hero">
+          <div>
+            <span class="eyebrow" style="color: #ffcb05">Kanto League</span>
+            <h1 id="welcomeHeading">Catch them, train them, become <em>Champion</em>.</h1>
+            <p id="welcomeSubtext">
+              Your adventure begins here. Catch Pokémon, complete your Pokédex,
+              and defeat all the Gyms to earn badges!
+            </p>
+            <!-- Logged-out view -->
+            <div id="authPrompt" class="hero-actions">
+              <a href="register.html" class="btn btn-buy btn-lg">Start your journey</a>
+              <a href="login.html" class="btn btn-ghost btn-lg">I have an account</a>
+            </div>
+            <div id="heroLoggedIn" class="hero-actions d-none">
+              <a href="gym.html" class="btn btn-buy btn-lg">Challenge a Gym</a>
+              <a href="shop.html" class="btn btn-ghost btn-lg">Visit the Shop</a>
+            </div>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <img class="a2" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="" />
+            <img class="a1" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png" alt="" />
+            <img class="a3" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="" />
+          </div>
+        </section>
+
+        <!-- Logged-in quick actions -->
+        <section id="actionCards" class="section d-none">
+          <div class="section-title"><h2>Quick actions</h2></div>
+          <div class="action-grid">
+            <a href="pokedex.html" class="action-card">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="" />
+              <h5>Check your Pokédex</h5>
+              <p>View all Pokémon you've collected.</p>
+              <span class="go">Open Pokédex →</span>
+            </a>
+            <a href="team.html" class="action-card">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" alt="" />
+              <h5>Manage your team</h5>
+              <p>Build and customise your battle team.</p>
+              <span class="go">Edit team →</span>
+            </a>
+            <a href="gym.html" class="action-card">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" alt="" />
+              <h5>Challenge a Gym</h5>
+              <p>Battle Gym Leaders and earn badges.</p>
+              <span class="go">Find a gym →</span>
+            </a>
+            <a href="shop.html" class="action-card">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/amulet-coin.png" alt="" />
+              <h5>Purchase an item</h5>
+              <p>Spend coins to unlock Pokémon and items.</p>
+              <span class="go">Go shopping →</span>
+            </a>
+          </div>
+        </section>
 
         <!-- Getting Started Flow -->
-        <section id="gettingStarted" style="margin-top: 30px">
-          <h2>How to Play</h2>
-          <ol
-            style="
-              text-align: left;
-              max-width: 600px;
-              margin: 0 auto;
-              font-size: 1rem;
-            "
-          >
-            <li>
-              ⚔️ Go to <a href="team.html">Team</a> and select your starter
-              Pokémon.
-            </li>
-            <li>
-              🪨 Try to beat <strong>Brock</strong>, the first Gym Leader.
-            </li>
-            <li>
-              💰 Visit the <a href="shop.html">Shop</a> and buy a new Pokémon.
-            </li>
-            <li>
-              📖 Check your <a href="pokedex.html">Pokédex</a> to see the
-              updated entry.
-            </li>
-            <li>
-              👥 Explore <a href="pokemon.html">Pokémon</a> to view other users’
-              collections.
-            </li>
-            <li>
-              ⚔️ Return to <a href="team.html">Team</a> and add your new Pokémon
-              to your lineup.
-            </li>
-            <li>
-              🏆 Challenge the <a href="gym.html">Gyms</a> and aim to become
-              Champion!
-            </li>
+        <section id="gettingStarted" class="section">
+          <div class="section-title"><h2>How to play</h2></div>
+          <ol class="steps">
+            <li><strong>Pick a starter</strong><span>Go to <a href="team.html">Team</a> and choose your first Pokémon.</span></li>
+            <li><strong>Beat Brock</strong><span>Take on the first Gym Leader in <a href="gym.html">Gyms</a>.</span></li>
+            <li><strong>Go shopping</strong><span>Spend your coins in the <a href="shop.html">Shop</a> on a Poké Ball.</span></li>
+            <li><strong>Check your Pokédex</strong><span>See the new entry in your <a href="pokedex.html">Pokédex</a>.</span></li>
+            <li><strong>Scout other trainers</strong><span>Browse <a href="pokemon.html">Pokémon</a> to view other collections.</span></li>
+            <li><strong>Grow your team</strong><span>Add your new Pokémon on the <a href="team.html">Team</a> page.</span></li>
+            <li><strong>Become Champion</strong><span>Clear all the <a href="gym.html">Gyms</a> in order.</span></li>
           </ol>
         </section>
 
         <!-- Special Hints -->
-        <section id="specialHints" style="margin-top: 40px">
-          <h2>Special Hints</h2>
-          <ul
-            style="
-              list-style: none;
-              padding: 0;
-              margin-top: 10px;
-              font-size: 1rem;
-            "
-          >
-            <li>
-              ✨ When you become <strong>Champion</strong>, a mysterious Pokémon
-              might appear...
-            </li>
-            <li>
-              ✨ When you complete the <strong>Pokédex</strong>, a mythical
-              Pokémon might visit...
-            </li>
-          </ul>
+        <section id="specialHints" class="section">
+          <div class="section-title"><h2>Special hints</h2></div>
+          <div class="hint-cards">
+            <div class="hint-card">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png" alt="" />
+              <p>When you become <strong>Champion</strong>, a mysterious Pokémon might appear...</p>
+            </div>
+            <div class="hint-card">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png" alt="" />
+              <p>When you complete the <strong>Pokédex</strong>, a mythical Pokémon might visit...</p>
+            </div>
+          </div>
         </section>
-
-        <!-- Logged-out view -->
-        <div id="authPrompt" style="margin-top: 30px">
-          <p>
-            <strong>New here?</strong> Register or login to start your journey!
-          </p>
-          <div style="margin-top: 10px">
-            <a href="register.html" class="btn-buy">Register</a>
-            <a href="login.html" class="btn-buy" style="margin-left: 10px"
-              >Login</a
-            >
-          </div>
-        </div>
-
-        <!-- Logged-in quick actions -->
-        <div
-          id="actionCards"
-          class="row"
-          style="margin-top: 40px; display: none"
-        >
-          <div class="pokemon-card" style="width: 220px">
-            <h5>Check Your Pokédex</h5>
-            <p>View all Pokémon you've collected.</p>
-            <a href="pokedex.html" class="btn-buy">Go</a>
-          </div>
-          <div class="pokemon-card" style="width: 220px">
-            <h5>Manage Your Teams</h5>
-            <p>Build and customize your battle team.</p>
-            <a href="team.html" class="btn-buy">Go</a>
-          </div>
-          <div class="pokemon-card" style="width: 220px">
-            <h5>Challenge a Gym</h5>
-            <p>Battle gym leaders and earn badges.</p>
-            <a href="gym.html" class="btn-buy">Go</a>
-          </div>
-          <div class="pokemon-card" style="width: 220px">
-            <h5>Purchase an Item</h5>
-            <p>Spend coins to unlock Pokémon and items.</p>
-            <a href="shop.html" class="btn-buy">Go</a>
-          </div>
-        </div>
       </div>
     </main>
 
@@ -168,38 +148,15 @@
           logo.src = getBallSprite("premier");
         }
 
-        // Hide auth prompt if token exists
+        // Logged in → quick actions; logged out → register/login prompt
         const token = localStorage.getItem("token");
         if (token) {
-          const authPrompt = document.getElementById("authPrompt");
-          if (authPrompt) authPrompt.style.display = "none";
-        }
-      });
-
-      document.addEventListener("DOMContentLoaded", () => {
-        const token = localStorage.getItem("token");
-
-        const authPrompt = document.getElementById("authPrompt");
-        const actionCards = document.querySelector(".row"); // your 4 cards container
-        const welcomeText = document.querySelector("h1");
-        const subText = document.querySelector("p");
-
-        if (token) {
-          // Logged in → show cards, hide prompt
-          if (authPrompt) authPrompt.style.display = "none";
-          if (actionCards) actionCards.style.display = "flex";
-          if (welcomeText) welcomeText.textContent = "Welcome back!";
-          if (subText)
-            subText.textContent =
-              "Ready to continue your journey? Choose an action below.";
-        } else {
-          // Logged out → show prompt, hide cards
-          if (authPrompt) authPrompt.style.display = "block";
-          if (actionCards) actionCards.style.display = "none";
-          if (welcomeText) welcomeText.textContent = "Welcome!";
-          if (subText)
-            subText.textContent =
-              "Your adventure begins here. Catch Pokémon, complete your Pokédex, and defeat all the Gyms to earn badges!";
+          document.getElementById("authPrompt").classList.add("d-none");
+          document.getElementById("heroLoggedIn").classList.remove("d-none");
+          document.getElementById("actionCards").classList.remove("d-none");
+          document.getElementById("welcomeHeading").innerHTML = "Welcome back, <em>Trainer</em>.";
+          document.getElementById("welcomeSubtext").textContent =
+            "Ready to continue your journey? Choose an action below.";
         }
       });
     </script>

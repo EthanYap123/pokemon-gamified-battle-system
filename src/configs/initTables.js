@@ -81,6 +81,7 @@ CREATE TABLE UserPokedex (
   user_id INT NOT NULL,
   pokemon_id INT NOT NULL,
   obtained BOOLEAN DEFAULT FALSE,
+  UNIQUE KEY unique_user_pokemon (user_id, pokemon_id),
   FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
   FOREIGN KEY (pokemon_id) REFERENCES Pokemon(pokemon_id) ON DELETE CASCADE
 );

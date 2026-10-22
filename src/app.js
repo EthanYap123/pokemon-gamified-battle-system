@@ -2,6 +2,7 @@
 // INCLUDES
 //////////////////////////////////////////////////////
 const express = require('express');
+const path = require('path');
 
 //////////////////////////////////////////////////////
 // CREATE APP
@@ -25,7 +26,12 @@ app.use("/api/", mainRoutes);
 //////////////////////////////////////////////////////
 // SETUP STATIC FILES
 //////////////////////////////////////////////////////
-app.use("/", express.static('public'));
+app.use("/", express.static(path.join(__dirname, '..', 'public')));
+
+// Send the bare site root to the home page
+app.get("/", (req, res) => {
+  res.redirect("/html/index.html");
+});
 
 //////////////////////////////////////////////////////
 // ERROR HANDLING
