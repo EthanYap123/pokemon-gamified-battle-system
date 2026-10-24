@@ -115,6 +115,13 @@ GitHub Pages only serves static files, so the demo is a browser-only build. `npm
 
 `render.yaml` describes a Render web service. Create a MySQL database on any host (for example Aiven or TiDB Cloud), run `npm run init_tables` once with that database's details in `.env`, then create the service on Render from this repository and fill in the `DB_*` values it asks for.
 
+## What I learned
+
+- **Logging in isn't the same as being allowed.** My Year 1 version checked that a token was valid, but not that it belonged to the `user_id` in the URL, so one player could spend another player's coins. Adding ownership checks on every player route taught me the difference between authentication and authorisation.
+- **Money-like actions need transactions.** A shop purchase deducts coins, rolls a Pokémon and records it. If any step fails halfway, everything has to roll back, so each purchase runs as one database transaction.
+- **Players find exploits fast.** Gym rewards could be claimed more than once. Now rewards need a won, unclaimed battle, and gyms must be beaten in order.
+- **Simulate before you balance.** I tuned gym levels by simulating thousands of battles, so any starter can beat the first gym.
+
 ## Author
 
 Ethan Yap ([@EthanYap123](https://github.com/EthanYap123)) · [Portfolio](https://ethanyap123.github.io/portfolio/)
