@@ -2,7 +2,7 @@
 
 A full-stack Pokémon web game: catch Pokémon from a gacha shop, build a team, and fight turn-based battles through eight gyms and Champion Blue. A Node.js and Express REST API over PostgreSQL handles accounts, battles, the shop and progression, with JWT login and bcrypt password hashing.
 
-**Live app:** https://pokemon-gamified-battle-system.vercel.app (real accounts on a shared server; see [Deployment](#deployment))
+**Live app:** https://pokemon-gamified-battle-system-eta.vercel.app (real accounts on a shared server; see [Deployment](#deployment))
 **Browser demo:** https://ethanyap123.github.io/pokemon-gamified-battle-system/ (no sign-up needed, progress stays in your browser)
 
 ![Node.js](https://img.shields.io/badge/Node.js-Express_5-3c873a) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791) ![Vercel](https://img.shields.io/badge/hosted_on-Vercel-000) ![JWT](https://img.shields.io/badge/auth-JWT_%2B_bcrypt-555) [![Deploy demo](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml/badge.svg)](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml)
