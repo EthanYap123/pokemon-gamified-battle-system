@@ -7,6 +7,6 @@ const jwtMiddleware = require('../middleware/jwtMiddleware');
 router.get('/', pokemonController.getAllPokemon);
 router.get('/:id', pokemonController.getPokemonById);
 router.get('/type/:type', pokemonController.getPokemonByType);
-router.post('/', jwtMiddleware.verifyToken, pokemonController.createNewPokemon);
+router.post('/', jwtMiddleware.verifyToken, jwtMiddleware.verifyAdmin, pokemonController.createNewPokemon);
 
 module.exports = router;

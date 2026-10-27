@@ -6,10 +6,10 @@ const userCompletionController = require('../controllers/userCompletionControlle
 const jwtMiddleware = require('../middleware/jwtMiddleware');
 
 // Challenges CRUD
-router.post('/', jwtMiddleware.verifyToken, challengeController.createNewChallenge);
+router.post('/', jwtMiddleware.verifyToken, jwtMiddleware.verifyAdmin, challengeController.createNewChallenge);
 router.get('/', jwtMiddleware.verifyToken, challengeController.readAllChallenge);
-router.delete('/:gym_id', jwtMiddleware.verifyToken, challengeController.deleteChallengeById);
-router.put('/:gym_id', jwtMiddleware.verifyToken, challengeController.updateChallengeById);
+router.delete('/:gym_id', jwtMiddleware.verifyToken, jwtMiddleware.verifyAdmin, challengeController.deleteChallengeById);
+router.put('/:gym_id', jwtMiddleware.verifyToken, jwtMiddleware.verifyAdmin, challengeController.updateChallengeById);
 
 // User Completions CRUD
 router.post(

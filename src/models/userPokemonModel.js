@@ -29,7 +29,8 @@ module.exports.findByUserAndRarity = (user_id, rarity, callback) => {
 module.exports.insertSingle = (data, callback) => {
     const SQLSTATEMENT = `
         INSERT INTO UserPokemon (user_id, pokemon_id, rarity)
-        VALUES (?, ?, ?);
+        VALUES (?, ?, ?)
+        RETURNING id;
     `;
     const VALUES = [
         data.user_id,

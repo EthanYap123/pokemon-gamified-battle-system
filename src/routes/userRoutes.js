@@ -5,7 +5,7 @@ const userController = require('../controllers/userController');
 const jwtMiddleware = require('../middleware/jwtMiddleware');
 
 // Task 1 - Post (Same as /register)
-router.post('/', jwtMiddleware.verifyToken, userController.createNewUser);
+router.post('/', jwtMiddleware.verifyToken, jwtMiddleware.verifyAdmin, userController.createNewUser);
 
 // Task 2 - Get
 router.get('/', userController.readAllUser);

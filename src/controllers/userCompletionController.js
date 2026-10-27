@@ -116,7 +116,7 @@ module.exports.awardBadge = (req, res) => {
         if (isFirstClear) {
             const SQL = `
                 INSERT INTO UserBadge (user_id, badge_id)
-                SELECT ?, badge_id FROM Badge WHERE gym_id = ?;
+                SELECT ?::int, badge_id FROM Badge WHERE gym_id = ?;
             `;
             pool.query(SQL, [data.user_id, data.gym_id], (err, resultsBadge) => {
                 if (err) {
@@ -165,7 +165,7 @@ module.exports.awardBadge = (req, res) => {
         // Champion check + Mewtwo unlock
         function checkChampionAndFinalize(amuletAwarded) {
             const SQLChampion = `
-        SELECT COUNT(*) AS badgeCount FROM UserBadge WHERE user_id = ?;
+        SELECT COUNT(*) AS "badgeCount" FROM UserBadge WHERE user_id = ?;
     `;
             pool.query(SQLChampion, [data.user_id], (errCount, resultsCount) => {
                 if (errCount) {
@@ -205,7 +205,7 @@ module.exports.awardBadge = (req, res) => {
                                 const SQLDex = `
                             INSERT INTO UserPokedex (user_id, pokemon_id, obtained)
                             VALUES (?, 150, TRUE)
-                            ON DUPLICATE KEY UPDATE obtained = TRUE;
+                            ON CONFLICT (user_id, pokemon_id) DO UPDATE SET obtained = TRUE;
                         `;
                                 pool.query(SQLDex, [data.user_id], (errDex) => {
                                     if (errDex) {

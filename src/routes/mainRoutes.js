@@ -4,6 +4,7 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const bcryptMiddleware = require('../middleware/bcryptMiddleware');
 const jwtMiddleware = require('../middleware/jwtMiddleware');
+const rateLimit = require('../middleware/rateLimit');
 
 // Sub-routers
 const userRoutes = require('./userRoutes');
@@ -34,6 +35,7 @@ router.use("/battle", battleRoutes);
 // Auth routes (public)
 router.post(
   "/login",
+  rateLimit.login,                          // slow down password guessing
   userController.login, // fetch user first
   bcryptMiddleware.comparePassword,         // check password
   jwtMiddleware.generateToken,              // generate JWT
@@ -42,6 +44,8 @@ router.post(
 
 router.post(
   "/register",
+  rateLimit.registerPerVisitor,             // a few accounts per visitor
+  rateLimit.registerTotal,                  // and a daily cap for everyone
   userController.checkUsernameOrEmailExist, // ensure unique username/email
   bcryptMiddleware.hashPassword,            // hash password
   userController.register,                  // create user

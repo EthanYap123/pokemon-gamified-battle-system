@@ -1,30 +1,31 @@
+// Creates the tables and fills them with the starting data.
+//
+//   npm run init_tables            create missing tables, seed only if the database is empty
+//   npm run init_tables -- --reset drop every table first (wipes all progress)
+//
+// Safe to run on every deploy: Vercel runs it during the build.
+const crypto = require("crypto");
 const pool = require("../services/db");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
-bcrypt.hash("1234", saltRounds, (err, hash) => {
-  if (err) {
-    console.error("Error hashing password:", err);
-    process.exit();
-  }
+const RESET = process.argv.includes("--reset");
 
-  const SQLSTATEMENT = `
-DROP TABLE IF EXISTS PullHistory;
-DROP TABLE IF EXISTS UserBadge;
-DROP TABLE IF EXISTS Badge;
-DROP TABLE IF EXISTS Battles;
-DROP TABLE IF EXISTS Team;
-DROP TABLE IF EXISTS UserPokedex;
-DROP TABLE IF EXISTS UserPokemon;
-DROP TABLE IF EXISTS UserCompletion;
-DROP TABLE IF EXISTS Shop;
-DROP TABLE IF EXISTS Gym;
-DROP TABLE IF EXISTS Pokemon;
-DROP TABLE IF EXISTS User;
+// The seed trainers (mew, mewtwo, Brock) are test accounts. Locally they use
+// SEED_PASSWORD or "1234"; on the live site, without SEED_PASSWORD, they get a
+// random password nobody knows, so they only show up on the leaderboard.
+const seedPassword = process.env.SEED_PASSWORD
+  || (process.env.VERCEL ? crypto.randomBytes(24).toString("hex") : "1234");
 
--- Users table
-CREATE TABLE User (
-  user_id INT AUTO_INCREMENT PRIMARY KEY,
+const DROP_SQL = `
+DROP TABLE IF EXISTS RateLimit, PullHistory, UserBadge, Badge, Battles, Team, UserPokedex,
+  UserPokemon, UserCompletion, Shop, Gym, Pokemon, Users CASCADE;
+`;
+
+const SCHEMA_SQL = `
+-- Users table ("User" is a reserved word in Postgres)
+CREATE TABLE IF NOT EXISTS Users (
+  user_id SERIAL PRIMARY KEY,
   username VARCHAR(255) NOT NULL UNIQUE,
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
@@ -33,19 +34,22 @@ CREATE TABLE User (
   pity_count INT DEFAULT 0,        -- ball pulls since the last rare or better
   last_free_pull DATE DEFAULT NULL -- day the free daily Poke Ball was last used
 );
+-- "Ash" and "ash" count as the same name (and the same for emails)
+CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower ON Users (LOWER(username));
+CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower ON Users (LOWER(email));
 
 -- Pokémon table (with type1 and type2), acts as the global pokedex, list of all 151 pokemon
-CREATE TABLE Pokemon (
-  pokemon_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Pokemon (
+  pokemon_id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE,
-  rarity ENUM('common','uncommon','rare','ultra','legendary') NOT NULL,
+  rarity VARCHAR(20) NOT NULL CHECK (rarity IN ('common','uncommon','rare','ultra','legendary')),
   type1 VARCHAR(50) NOT NULL,
   type2 VARCHAR(50) DEFAULT NULL
 );
 
 -- Gyms table
-CREATE TABLE Gym (
-  gym_id INTEGER PRIMARY KEY AUTO_INCREMENT,   -- use SERIAL in Postgres
+CREATE TABLE IF NOT EXISTS Gym (
+  gym_id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   leader TEXT NOT NULL,
   reward_first_clear INT NOT NULL,
@@ -55,103 +59,97 @@ CREATE TABLE Gym (
 );
 
 -- UserCompletion table (tracks gym clears)
-CREATE TABLE UserCompletion (
-  completion_id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  gym_id INT NOT NULL,
+CREATE TABLE IF NOT EXISTS UserCompletion (
+  completion_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+  gym_id INT NOT NULL REFERENCES Gym(gym_id) ON DELETE CASCADE,
   details VARCHAR(255),                -- optional field your model references
   first_clear BOOLEAN DEFAULT FALSE,   -- mark if this was the first clear
   coins_awarded INT NOT NULL,          -- how many coins were given
-  completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (gym_id) REFERENCES Gym(gym_id) ON DELETE CASCADE
+  completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- User-owned Pokémon table, so every single existing pokemon
-CREATE TABLE UserPokemon (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  pokemon_id INT NOT NULL,
-  rarity ENUM('common','uncommon','rare','ultra','legendary') NOT NULL,
-  obtained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (pokemon_id) REFERENCES Pokemon(pokemon_id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS UserPokemon (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+  pokemon_id INT NOT NULL REFERENCES Pokemon(pokemon_id) ON DELETE CASCADE,
+  rarity VARCHAR(20) NOT NULL CHECK (rarity IN ('common','uncommon','rare','ultra','legendary')),
+  obtained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- User Pokédex table, marks entries with the pokemon id and user id
-CREATE TABLE UserPokedex (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  pokemon_id INT NOT NULL,
+CREATE TABLE IF NOT EXISTS UserPokedex (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+  pokemon_id INT NOT NULL REFERENCES Pokemon(pokemon_id) ON DELETE CASCADE,
   obtained BOOLEAN DEFAULT FALSE,
-  UNIQUE KEY unique_user_pokemon (user_id, pokemon_id),
-  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (pokemon_id) REFERENCES Pokemon(pokemon_id) ON DELETE CASCADE
+  UNIQUE (user_id, pokemon_id)
 );
 
 -- Team table
-CREATE TABLE Team (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  user_pokemon_id INT NOT NULL,
-  slot INT NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (user_pokemon_id) REFERENCES UserPokemon(id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS Team (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+  user_pokemon_id INT NOT NULL REFERENCES UserPokemon(id) ON DELETE CASCADE,
+  slot INT NOT NULL
 );
 
-CREATE TABLE Shop (
-  item_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Shop (
+  item_id SERIAL PRIMARY KEY,
   item_name VARCHAR(255) NOT NULL,
   price INT NOT NULL,
   effect VARCHAR(255) NOT NULL
 );
 
 -- Battles table
-CREATE TABLE Battles (
-  battle_id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  gym_id INT NOT NULL,
-  state JSON NOT NULL,
-  result ENUM('win','lose') DEFAULT NULL,
+CREATE TABLE IF NOT EXISTS Battles (
+  battle_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+  gym_id INT NOT NULL REFERENCES Gym(gym_id) ON DELETE CASCADE,
+  state JSONB NOT NULL,
+  result VARCHAR(10) DEFAULT NULL CHECK (result IN ('win','lose')),
   claimed BOOLEAN DEFAULT FALSE,   -- gym rewards already paid for this win
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (gym_id) REFERENCES Gym(gym_id) ON DELETE CASCADE
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Badges table
-CREATE TABLE Badge (
-  badge_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Badge (
+  badge_id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE,
-  gym_id INT NOT NULL,
-  FOREIGN KEY (gym_id) REFERENCES Gym(gym_id) ON DELETE CASCADE
+  gym_id INT NOT NULL REFERENCES Gym(gym_id) ON DELETE CASCADE
 );
 
 -- UserBadge table (tracks badge ownership)
-CREATE TABLE UserBadge (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  badge_id INT NOT NULL,
-  obtained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (badge_id) REFERENCES Badge(badge_id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS UserBadge (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+  badge_id INT NOT NULL REFERENCES Badge(badge_id) ON DELETE CASCADE,
+  obtained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- PullHistory table (every shop ball result)
-CREATE TABLE PullHistory (
-  pull_id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
+CREATE TABLE IF NOT EXISTS PullHistory (
+  pull_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
   item_name VARCHAR(255) NOT NULL,
-  pokemon_id INT NOT NULL,
+  pokemon_id INT NOT NULL REFERENCES Pokemon(pokemon_id) ON DELETE CASCADE,
   rarity VARCHAR(20) NOT NULL,
   duplicate BOOLEAN DEFAULT FALSE,
-  pulled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (pokemon_id) REFERENCES Pokemon(pokemon_id) ON DELETE CASCADE
+  pulled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- RateLimit table (request counts per visitor, see middleware/rateLimit.js)
+CREATE TABLE IF NOT EXISTS RateLimit (
+  key VARCHAR(255) PRIMARY KEY,
+  hits INT NOT NULL,
+  window_start TIMESTAMP NOT NULL
+);
+`;
+
+const seedSql = (hash) => `
 -- Base Users
-INSERT INTO User (username, email, password, coins, amulet_coins) VALUES
+INSERT INTO Users (username, email, password, coins, amulet_coins) VALUES
 ('mew', 'mew@example.com', '${hash}', 0, 0),
 ('mewtwo', 'mewtwo@example.com', '${hash}', 1000000, 10),
 ('Brock', 'brock@example.com', '${hash}', 0, 0);
@@ -526,11 +524,31 @@ INSERT INTO UserCompletion (user_id, gym_id, first_clear, coins_awarded) VALUES
 (2, 7, TRUE, 700),
 (2, 8, TRUE, 800);
 
+-- Pokémon were inserted with fixed ids, so move the id counter past them
+SELECT setval(pg_get_serial_sequence('pokemon', 'pokemon_id'), (SELECT MAX(pokemon_id) FROM Pokemon));
 `;
 
-  pool.query(SQLSTATEMENT, (error) => {
-    if (error) console.error("Error creating tables:", error);
-    else console.log("Tables created successfully");
-    process.exit();
-  });
-});
+async function setup() {
+  if (RESET) {
+    await pool.query(DROP_SQL);
+    console.log("Dropped all tables");
+  }
+  await pool.query(SCHEMA_SQL);
+
+  const [{ count }] = await pool.query("SELECT COUNT(*) AS count FROM Users;");
+  if (count > 0) {
+    console.log(`Tables ready, ${count} trainers already in the database (not reseeded)`);
+    return;
+  }
+
+  const hash = await bcrypt.hash(seedPassword, saltRounds);
+  await pool.query(`BEGIN;\n${seedSql(hash)}\nCOMMIT;`);
+  console.log("Tables created and seeded");
+}
+
+setup()
+  .catch((error) => {
+    console.error("Error setting up tables:", error);
+    process.exitCode = 1;
+  })
+  .finally(() => pool.end());

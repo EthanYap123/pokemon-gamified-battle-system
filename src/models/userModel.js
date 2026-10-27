@@ -4,11 +4,12 @@ const pool = require('../services/db');
 module.exports.insertSingle = (data, callback) => {
   // Prevent duplicate username or email before inserting
   const SQLSTATEMENT = `
-        INSERT INTO User (username, email, password)
-        SELECT ?, ?, ?
+        INSERT INTO Users (username, email, password)
+        SELECT ?::varchar, ?::varchar, ?::varchar
         WHERE NOT EXISTS (
-            SELECT * FROM User WHERE username = ? OR email = ?
-        );
+            SELECT * FROM Users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)
+        )
+        RETURNING user_id;
     `;
 
   // First three ? are values to insert, last two ? are duplicate checks
@@ -22,14 +23,14 @@ module.exports.selectAll = (callback) => {
   // Public list: no password hashes or email addresses
   const SQLSTATEMENT = `
     SELECT user_id, username, coins, amulet_coins
-    FROM User;
+    FROM Users;
   `;
   pool.query(SQLSTATEMENT, callback);
 };
 
 // Password hash for checking the current password
 module.exports.selectPasswordHash = (data, callback) => {
-  const SQLSTATEMENT = `SELECT password FROM User WHERE user_id = ?;`;
+  const SQLSTATEMENT = `SELECT password FROM Users WHERE user_id = ?;`;
   pool.query(SQLSTATEMENT, [data.user_id], callback);
 };
 
@@ -62,7 +63,7 @@ module.exports.selectLeaderboard = async () => {
       u.amulet_coins,
       (SELECT COUNT(*) FROM UserBadge ub WHERE ub.user_id = u.user_id) AS badges,
       (SELECT COUNT(DISTINCT up.pokemon_id) FROM UserPokemon up WHERE up.user_id = u.user_id) AS caught
-    FROM User u;
+    FROM Users u;
   `;
   const [rows] = await pool.promise().query(SQLSTATEMENT);
   return rows.map(r => ({ ...r, badges: Number(r.badges), caught: Number(r.caught) }));
@@ -73,7 +74,7 @@ module.exports.selectById = (data, callback) => {
   // Exclude password hashes for security
   const SQLSTATEMENT = `
     SELECT user_id, username, email, coins, amulet_coins
-    FROM User
+    FROM Users
     WHERE user_id = ?;
   `;
   const VALUES = [data.user_id];
@@ -84,24 +85,26 @@ module.exports.selectById = (data, callback) => {
 module.exports.updateById = (data, callback) => {
   // Duplicate check for both username and email
   const SQLSTATEMENT = `
-    UPDATE User u
-    LEFT JOIN User u2 
-      ON (u2.username = ? OR u2.email = ?) AND u2.user_id != ?
+    UPDATE Users
     SET
-      u.username = ?,
-      u.email = ?,
-      u.password = COALESCE(?, u.password)
-    WHERE u.user_id = ? AND u2.user_id IS NULL;
+      username = ?,
+      email = ?,
+      password = COALESCE(?, password)
+    WHERE user_id = ?
+      AND NOT EXISTS (
+        SELECT 1 FROM Users u2
+        WHERE (LOWER(u2.username) = LOWER(?) OR LOWER(u2.email) = LOWER(?)) AND u2.user_id != ?
+      );
   `;
 
   const VALUES = [
-    data.username,        // duplicate check username
-    data.email,           // duplicate check email
-    data.user_id,         // exclude current user
     data.username,        // update username
     data.email,           // update email
     data.password,        // new password hash, or null to keep the current one
-    data.user_id          // target user
+    data.user_id,         // target user
+    data.username,        // duplicate check username
+    data.email,           // duplicate check email
+    data.user_id          // exclude current user
   ];
 
   pool.query(SQLSTATEMENT, VALUES, callback);
@@ -110,7 +113,7 @@ module.exports.updateById = (data, callback) => {
 // Extra
 module.exports.deleteById = (data, callback) => {
   const SQLSTATEMENT = `
-    DELETE FROM User
+    DELETE FROM Users
     WHERE user_id = ?;
   `;
   const VALUES = [data.user_id];
@@ -119,13 +122,13 @@ module.exports.deleteById = (data, callback) => {
 
 //-------------------------------------------------------------------------
 
-// Login
+// Login (usernames are not case-sensitive)
 module.exports.login = (data, callback) => {
   // Only fetch what’s needed for login
   const SQLSTATEMENT = `
     SELECT user_id, username, password
-    FROM User
-    WHERE username = ?;
+    FROM Users
+    WHERE LOWER(username) = LOWER(?);
   `;
   const VALUES = [data.username];
   pool.query(SQLSTATEMENT, VALUES, callback);
@@ -133,8 +136,8 @@ module.exports.login = (data, callback) => {
 
 // Register
 module.exports.readUserByEmailAndUsername = (data, callback) => {
-  const SQL1 = `SELECT email FROM User WHERE email = ?;`;
-  const SQL2 = `SELECT username FROM User WHERE username = ?;`;
+  const SQL1 = `SELECT email FROM Users WHERE LOWER(email) = LOWER(?);`;
+  const SQL2 = `SELECT username FROM Users WHERE LOWER(username) = LOWER(?);`;
 
   pool.query(SQL1, [data.email], (err1, res1) => {
     if (err1) return callback(err1);
@@ -146,8 +149,9 @@ module.exports.readUserByEmailAndUsername = (data, callback) => {
 };
 module.exports.register = (data, callback) => {
   const SQLSTATEMENT = `
-    INSERT INTO User (username, email, password)
-    VALUES (?, ?, ?);
+    INSERT INTO Users (username, email, password)
+    VALUES (?, ?, ?)
+    RETURNING user_id;
   `;
   const VALUES = [data.username, data.email, data.password];
   pool.query(SQLSTATEMENT, VALUES, callback);

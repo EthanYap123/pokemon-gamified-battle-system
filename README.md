@@ -1,10 +1,11 @@
 # Pokémon Gym & Battle System
 
-A full-stack Pokémon web game: catch Pokémon from a gacha shop, build a team, and fight turn-based battles through eight gyms and Champion Blue. A Node.js and Express REST API over MySQL handles accounts, battles, the shop and progression, with JWT login and bcrypt password hashing.
+A full-stack Pokémon web game: catch Pokémon from a gacha shop, build a team, and fight turn-based battles through eight gyms and Champion Blue. A Node.js and Express REST API over PostgreSQL handles accounts, battles, the shop and progression, with JWT login and bcrypt password hashing.
 
-**Live demo:** https://ethanyap123.github.io/pokemon-gamified-battle-system/ (runs in your browser; see [Live demo](#live-demo-github-pages))
+**Live app:** https://pokemon-gamified-battle-system.vercel.app (real accounts on a shared server; see [Deployment](#deployment))
+**Browser demo:** https://ethanyap123.github.io/pokemon-gamified-battle-system/ (no sign-up needed, progress stays in your browser)
 
-![Node.js](https://img.shields.io/badge/Node.js-Express_5-3c873a) ![MySQL](https://img.shields.io/badge/MySQL-database-00758f) ![JWT](https://img.shields.io/badge/auth-JWT_%2B_bcrypt-555) [![Deploy demo](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml/badge.svg)](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml)
+![Node.js](https://img.shields.io/badge/Node.js-Express_5-3c873a) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791) ![Vercel](https://img.shields.io/badge/hosted_on-Vercel-000) ![JWT](https://img.shields.io/badge/auth-JWT_%2B_bcrypt-555) [![Deploy demo](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml/badge.svg)](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml)
 
 ![Battle screen](docs/battle-screen.jpg)
 
@@ -41,11 +42,11 @@ Built for the Back-End Development (BED) module at Singapore Polytechnic, extend
 
 | Layer | Tools |
 | --- | --- |
-| Back end | Node.js, Express 5, mysql2 |
-| Database | MySQL |
+| Back end | Node.js, Express 5, node-postgres (`pg`) |
+| Database | PostgreSQL (Neon) |
 | Auth | JSON Web Tokens, bcrypt |
 | Front end | HTML, CSS, vanilla JavaScript |
-| Deployment | GitHub Actions + GitHub Pages (demo), Render (full version) |
+| Deployment | Vercel serverless function + Neon (live app), GitHub Actions + GitHub Pages (browser demo) |
 
 ## API
 
@@ -65,61 +66,61 @@ All routes are under `/api`. Player routes need an `Authorization: Bearer <token
 
 ```
 pokemon-gamified-battle-system/
-├── index.js               # Starts the server
+├── index.js               # Starts the server locally
+├── api/index.js           # The same app as a Vercel serverless function
 ├── public/                # Front end: html/, css/, js/, images/
 ├── src/
 │   ├── app.js             # Express app, static files, error handling
 │   ├── routes/            # One router per resource
 │   ├── controllers/       # Request handling and validation
 │   ├── models/            # SQL queries
-│   ├── middleware/        # JWT and bcrypt middleware
+│   ├── middleware/        # JWT, bcrypt and rate-limit middleware
 │   ├── services/          # Battle engine, database pool
 │   ├── data/              # Base stats, movesets, type chart
 │   └── configs/           # Schema and seed data
 ├── demo/                  # Browser-only build for GitHub Pages
-└── render.yaml            # Render deployment
+└── vercel.json            # Vercel build, routing and region
 ```
 
 ## Run it locally
 
-You need Node.js and a MySQL server.
+You need Node.js and a PostgreSQL database: a local Postgres server, or a free [Neon](https://neon.tech) database.
 
 1. Install dependencies:
    ```bash
    npm install
    ```
-2. Create a `.env` file with your MySQL details:
+2. Create a `.env` file:
    ```
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASSWORD=password
-   DB_NAME=pokemon_db_ca2
+   DATABASE_URL=postgres://user:password@localhost:5432/pokemon
    JWT_SECRET_KEY=your-secret-key
-   JWT_EXPIRES_IN=30m
-   JWT_ALGORITHM=HS256
    ```
-   Optional: `PORT` (defaults to 3000) and `DB_SSL_REJECT_AUTHORISE=true` to enforce the database's SSL certificate.
+   Optional: `PORT` (defaults to 3000), `JWT_EXPIRES_IN` (defaults to 30m), `ADMIN_USER_IDS` (comma-separated user ids allowed to change gyms, badges and Pokémon) and `SEED_PASSWORD` (password for the seed trainers, `1234` locally).
 3. Create the tables and seed data, then start the server:
    ```bash
    npm run init_tables
    npm run dev
    ```
+   `init_tables` only creates missing tables and only seeds an empty database, so it is safe to run again. `npm run init_tables -- --reset` wipes everything and starts over.
 4. Open http://localhost:3000.
 
-## Live demo (GitHub Pages)
+## Deployment
 
-GitHub Pages only serves static files, so the demo is a browser-only build. `npm run build:demo` copies `public/` into `_site/` and adds `demo/mock-api.js`, which answers the same `/api` routes in the browser using the real battle engine and the starting data from `initTables.js`. Progress is saved in the visitor's browser. `.github/workflows/deploy.yml` builds and publishes it on every push to `main`.
+**Live app (Vercel + Neon).** `vercel.json` turns the Express app into one serverless function (`api/index.js`) in Singapore (`sin1`). Vercel serves `public/` from its CDN and sends every `/api` request to the function. The database is a free Neon Postgres database connected through Vercel's Storage tab, which sets `DATABASE_URL`. Every deploy runs `npm run init_tables` as its build step, so new tables appear automatically and players keep their progress.
 
-## Deploying the full version
+Because the live app is shared by strangers on free plans, it has a few guards:
+- Sign-ups: 5 per visitor per hour and 300 per day in total. Logins: 20 attempts per 15 minutes. Changes (battle turns, shop, team): 120 a minute. The counts live in a `RateLimit` table, so every server instance shares them.
+- Routes that change shared game data (creating or deleting gyms, badges and Pokémon) are admin-only (`ADMIN_USER_IDS`).
+- The seed trainers get a random password on Vercel, so nobody can log in as them.
 
-`render.yaml` describes a Render web service. Create a MySQL database on any host (for example Aiven or TiDB Cloud), run `npm run init_tables` once with that database's details in `.env`, then create the service on Render from this repository and fill in the `DB_*` values it asks for.
+**Browser demo (GitHub Pages).** GitHub Pages only serves static files, so the demo is a browser-only build. `npm run build:demo` copies `public/` into `_site/` and adds `demo/mock-api.js`, which answers the same `/api` routes in the browser using the real battle engine and the starting data from `initTables.js`. Progress is saved in the visitor's browser. `.github/workflows/deploy.yml` builds and publishes it on every push to `main`.
 
 ## What I learned
 
 - **Logging in isn't the same as being allowed.** My Year 1 version checked that a token was valid, but not that it belonged to the `user_id` in the URL, so one player could spend another player's coins. Adding ownership checks on every player route taught me the difference between authentication and authorisation.
 - **Money-like actions need transactions.** A shop purchase deducts coins, rolls a Pokémon and records it. If any step fails halfway, everything has to roll back, so each purchase runs as one database transaction.
 - **Players find exploits fast.** Gym rewards could be claimed more than once. Now rewards need a won, unclaimed battle, and gyms must be beaten in order.
+- **Moving databases means more than swapping the driver.** Porting from MySQL to Postgres meant replacing `ON DUPLICATE KEY` with `ON CONFLICT`, `insertId` with `RETURNING`, MySQL variables with `ROW_NUMBER()`, and making usernames case-insensitive myself. It also exposed a shop transaction that waited on a second connection, which could stall a small serverless pool.
 - **Simulate before you balance.** I tuned gym levels by simulating thousands of battles, so any starter can beat the first gym.
 
 ## Author

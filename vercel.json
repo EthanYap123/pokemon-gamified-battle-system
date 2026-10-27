@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci",
+  "buildCommand": "npm run init_tables",
+  "outputDirectory": "public",
+  "regions": ["sin1"],
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api" }],
+  "redirects": [{ "source": "/", "destination": "/html/index.html", "permanent": false }]
+}

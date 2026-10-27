@@ -10,6 +10,6 @@ router.get('/', badgeController.getAllBadges);
 router.get('/:id/users', badgeController.getUsersByBadge);
 
 // POST create a new badge linked to a gym
-router.post('/', jwtMiddleware.verifyToken, badgeController.createBadge);
+router.post('/', jwtMiddleware.verifyToken, jwtMiddleware.verifyAdmin, badgeController.createBadge);
 
 module.exports = router;
