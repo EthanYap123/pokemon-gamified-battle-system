@@ -4,7 +4,8 @@ const pool = require('../services/db');
 module.exports.insertSingle = (data, callback) => {
     const SQLSTATEMENT = `
         INSERT INTO Gym (name, leader, reward_first_clear, reward_replay, pokemon_team, order_index)
-        VALUES (?, ?, ?, ?, ?, ?);
+        VALUES (?, ?, ?, ?, ?, ?)
+        RETURNING gym_id;
     `;
     const VALUES = [
         data.name,

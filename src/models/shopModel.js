@@ -3,6 +3,9 @@ const pool = require('../services/db');
 // Functions taking `conn` run inside the purchase transaction
 // (a connection from pool.promise().getConnection()).
 
+// The daily ball resets at midnight Singapore time
+const TODAY = `(NOW() AT TIME ZONE 'Asia/Singapore')::date`;
+
 // Get all shop items
 module.exports.getAllItems = (callback) => {
     const SQL = `SELECT item_id, item_name, price, effect FROM Shop;`;
@@ -31,8 +34,8 @@ module.exports.getCatchablePokemon = async () => {
 module.exports.getUserForUpdate = async (conn, user_id) => {
     const SQL = `
         SELECT coins, amulet_coins, pity_count,
-               (last_free_pull IS NULL OR last_free_pull < CURDATE()) AS daily_available
-        FROM User WHERE user_id = ? FOR UPDATE;
+               (last_free_pull IS NULL OR last_free_pull < ${TODAY}) AS daily_available
+        FROM Users WHERE user_id = ? FOR UPDATE;
     `;
     const [rows] = await conn.query(SQL, [user_id]);
     return rows[0] || null;
@@ -40,7 +43,7 @@ module.exports.getUserForUpdate = async (conn, user_id) => {
 
 module.exports.updateUserAfterPurchase = async (conn, data) => {
     const SQL = `
-        UPDATE User
+        UPDATE Users
         SET coins = coins + ?, amulet_coins = amulet_coins + ?, pity_count = ?
         WHERE user_id = ?;
     `;
@@ -48,7 +51,7 @@ module.exports.updateUserAfterPurchase = async (conn, data) => {
 };
 
 module.exports.useDailyPull = async (conn, user_id) => {
-    const SQL = `UPDATE User SET last_free_pull = CURDATE() WHERE user_id = ?;`;
+    const SQL = `UPDATE Users SET last_free_pull = ${TODAY} WHERE user_id = ?;`;
     await conn.query(SQL, [user_id]);
 };
 
@@ -61,13 +64,13 @@ module.exports.getOwnedPokemonIds = async (conn, user_id) => {
 module.exports.addCaughtPokemon = async (conn, user_id, pokemon_id) => {
     await conn.query(
         `INSERT INTO UserPokemon (user_id, pokemon_id, rarity)
-         SELECT ?, pokemon_id, rarity FROM Pokemon WHERE pokemon_id = ?;`,
+         SELECT ?::int, pokemon_id, rarity FROM Pokemon WHERE pokemon_id = ?;`,
         [user_id, pokemon_id]
     );
     await conn.query(
         `INSERT INTO UserPokedex (user_id, pokemon_id, obtained)
          VALUES (?, ?, TRUE)
-         ON DUPLICATE KEY UPDATE obtained = TRUE;`,
+         ON CONFLICT (user_id, pokemon_id) DO UPDATE SET obtained = TRUE;`,
         [user_id, pokemon_id]
     );
 };
@@ -84,8 +87,8 @@ module.exports.addPullHistory = async (conn, user_id, item_name, pulls) => {
 // Pity counter and daily ball status for the shop page
 module.exports.getStatus = async (user_id) => {
     const SQL = `
-        SELECT pity_count, (last_free_pull IS NULL OR last_free_pull < CURDATE()) AS daily_available
-        FROM User WHERE user_id = ?;
+        SELECT pity_count, (last_free_pull IS NULL OR last_free_pull < ${TODAY}) AS daily_available
+        FROM Users WHERE user_id = ?;
     `;
     const [rows] = await pool.promise().query(SQL, [user_id]);
     return rows[0] || null;

@@ -75,7 +75,7 @@ module.exports.upsertEntry = (data, callback) => {
   const SQL = `
     INSERT INTO UserPokedex (user_id, pokemon_id, obtained)
     VALUES (?, ?, TRUE)
-    ON DUPLICATE KEY UPDATE obtained = TRUE;
+    ON CONFLICT (user_id, pokemon_id) DO UPDATE SET obtained = TRUE;
   `;
   pool.query(SQL, [data.user_id, data.pokemon_id], callback);
 };

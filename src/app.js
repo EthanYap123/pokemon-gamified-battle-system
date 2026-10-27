@@ -15,6 +15,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Vercel sits in front of the app, so trust its forwarded headers
+app.set("trust proxy", true);
+
+// Limit requests that change data (reads are not counted)
+const rateLimit = require('./middleware/rateLimit');
+app.use("/api/", (req, res, next) => (req.method === "GET" ? next() : rateLimit.writes(req, res, next)));
+
 //////////////////////////////////////////////////////
 // SETUP ROUTES
 //////////////////////////////////////////////////////

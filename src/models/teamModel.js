@@ -6,7 +6,8 @@ module.exports.addStarter = (data, callback) => {
 
     const SQL1 = `
         INSERT INTO UserPokemon (user_id, pokemon_id, rarity)
-        SELECT ?, pokemon_id, rarity FROM Pokemon WHERE pokemon_id = ?;
+        SELECT ?::int, pokemon_id, rarity FROM Pokemon WHERE pokemon_id = ?
+        RETURNING id;
     `;
     pool.query(SQL1, [user_id, pokemon_id], (err1, result1) => {
         if (err1) {
@@ -19,7 +20,7 @@ module.exports.addStarter = (data, callback) => {
         const SQL2 = `
         INSERT INTO UserPokedex (user_id, pokemon_id, obtained)
         VALUES (?, ?, TRUE)
-        ON DUPLICATE KEY UPDATE obtained = TRUE;
+        ON CONFLICT (user_id, pokemon_id) DO UPDATE SET obtained = TRUE;
         `;
         pool.query(SQL2, [user_id, pokemon_id], (err2, result2) => {
             if (err2) {
@@ -80,7 +81,7 @@ module.exports.addPokemonToTeam = (data, callback) => {
                 if (results3.length > 0) return callback({ code: "ALREADY_IN_TEAM" });
 
                 // Get next slot
-                const SQL4 = `SELECT COALESCE(MAX(slot), 0) + 1 AS nextSlot FROM Team WHERE user_id = ?;`;
+                const SQL4 = `SELECT COALESCE(MAX(slot), 0) + 1 AS "nextSlot" FROM Team WHERE user_id = ?;`;
                 pool.query(SQL4, [user_id], (err4, results4) => {
                     if (err4) return callback(err4);
 
@@ -108,11 +109,13 @@ module.exports.removePokemonFromTeam = (data, callback) => {
 
             // Renumber slots
             const SQL3 = `
-        SET @rownum := 0;
-        UPDATE Team
-        SET slot = (@rownum := @rownum + 1)
-        WHERE user_id = ?
-        ORDER BY slot;
+        UPDATE Team t
+        SET slot = numbered.new_slot
+        FROM (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY slot) AS new_slot
+          FROM Team WHERE user_id = ?
+        ) numbered
+        WHERE t.id = numbered.id;
       `;
             pool.query(SQL3, [user_id], callback);
         });

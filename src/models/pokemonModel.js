@@ -8,7 +8,7 @@ module.exports.findAll = (callback) => {
       u.username, 
       p.name AS pokemon_name
     FROM UserPokemon up
-    INNER JOIN User u ON up.user_id = u.user_id
+    INNER JOIN Users u ON up.user_id = u.user_id
     INNER JOIN Pokemon p ON up.pokemon_id = p.pokemon_id;
   `;
   pool.query(SQLSTATEMENT, callback);
@@ -39,7 +39,8 @@ module.exports.findByType = (type, callback) => {
 module.exports.insertSingle = (data, callback) => {
     const SQLSTATEMENT = `
         INSERT INTO Pokemon (name, rarity, type1, type2)
-        VALUES (?, ?, ?, ?);
+        VALUES (?, ?, ?, ?)
+        RETURNING pokemon_id;
     `;
     const types = Array.isArray(data.types) ? data.types : [data.types];
     const VALUES = [

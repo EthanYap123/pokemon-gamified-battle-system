@@ -72,9 +72,9 @@ function statusPayload(row) {
     };
 }
 
-// Catch the rolled Pokémon; duplicates refund half the single-ball price
-async function catchPulls(conn, user_id, rarities, singlePrice) {
-    const gachaPool = await getGachaPool();
+// Catch the rolled Pokémon; duplicates refund half the single-ball price.
+// gachaPool is loaded before the transaction so it never waits on a second connection.
+async function catchPulls(conn, gachaPool, user_id, rarities, singlePrice) {
     const owned = await shopModel.getOwnedPokemonIds(conn, user_id);
     const pulls = [];
     let refund = 0;
@@ -153,6 +153,7 @@ module.exports.purchaseItem = async (req, res) => {
         const odds = ODDS[ballKey(item.item_name)];
         if (!isAmulet && !odds) return res.status(400).json({ message: "This item cannot be bought." });
 
+        const gachaPool = await getGachaPool();
         const payload = await withTransaction(async (conn) => {
             const user = await shopModel.getUserForUpdate(conn, user_id);
             if (!user) throw new ShopError(404, "User not found.");
@@ -182,7 +183,7 @@ module.exports.purchaseItem = async (req, res) => {
             if (user.coins < cost) throw new ShopError(403, "Not enough coins.");
 
             const { rarities, pity } = rollPulls(odds, quantity, user.pity_count);
-            const { pulls, refund } = await catchPulls(conn, user_id, rarities, item.price);
+            const { pulls, refund } = await catchPulls(conn, gachaPool, user_id, rarities, item.price);
             await shopModel.addPullHistory(conn, user_id, item.item_name, pulls);
             await shopModel.updateUserAfterPurchase(conn, {
                 user_id, coinChange: refund - cost, pity_count: pity,
@@ -216,6 +217,7 @@ module.exports.claimDaily = async (req, res) => {
     const user_id = req.params.user_id;
 
     try {
+        const gachaPool = await getGachaPool();
         const payload = await withTransaction(async (conn) => {
             const user = await shopModel.getUserForUpdate(conn, user_id);
             if (!user) throw new ShopError(404, "User not found.");
@@ -223,7 +225,7 @@ module.exports.claimDaily = async (req, res) => {
 
             await shopModel.useDailyPull(conn, user_id);
             const { rarities, pity } = rollPulls(ODDS.pokeball, 1, user.pity_count);
-            const { pulls, refund } = await catchPulls(conn, user_id, rarities, 100);
+            const { pulls, refund } = await catchPulls(conn, gachaPool, user_id, rarities, 100);
             await shopModel.addPullHistory(conn, user_id, DAILY_ITEM_NAME, pulls);
             await shopModel.updateUserAfterPurchase(conn, { user_id, coinChange: refund, pity_count: pity });
 

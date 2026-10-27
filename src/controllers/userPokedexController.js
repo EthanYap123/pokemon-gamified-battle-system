@@ -10,7 +10,7 @@ module.exports.getUserPokedex = (req, res) => {
   const handleResults = (results) => {
     // After fetching results, check completion excluding Mew
     const SQLCount = `
-      SELECT COUNT(*) AS obtainedCount
+      SELECT COUNT(*) AS "obtainedCount"
       FROM UserPokedex
       WHERE user_id = ? AND obtained = TRUE AND pokemon_id != 151;
     `;
@@ -34,7 +34,7 @@ module.exports.getUserPokedex = (req, res) => {
           return res.status(200).json({ pokedex: results });
         }
 
-        const alreadyHasMew = resultsHas.length > 0 && resultsHas[0].obtained === 1;
+        const alreadyHasMew = resultsHas.length > 0 && resultsHas[0].obtained === true;
 
         if (!alreadyHasMew && obtainedCount === TOTAL_POKEMON) {
 
@@ -51,7 +51,7 @@ module.exports.getUserPokedex = (req, res) => {
             const SQLDex = `
               INSERT INTO UserPokedex (user_id, pokemon_id, obtained)
               VALUES (?, 151, TRUE)
-              ON DUPLICATE KEY UPDATE obtained = TRUE;
+              ON CONFLICT (user_id, pokemon_id) DO UPDATE SET obtained = TRUE;
             `;
             pool.query(SQLDex, [user_id], (errDex) => {
               if (errDex) {

@@ -48,7 +48,7 @@
         };
         const add = (table, row) => insert(db, table, row);
 
-        (SEED.User || []).forEach(u => add("User", { ...u, password: seedHash, pity_count: 0, last_free_pull: null }));
+        (SEED.Users || []).forEach(u => add("User", { ...u, password: seedHash, pity_count: 0, last_free_pull: null }));
         (SEED.Pokemon || []).forEach(p => db.Pokemon.push({ ...p }));
         (SEED.Gym || []).forEach(g => add("Gym", { ...g }));
         (SEED.Badge || []).forEach(b => add("Badge", { ...b }));

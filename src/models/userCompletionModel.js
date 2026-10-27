@@ -4,7 +4,8 @@ const pool = require('../services/db');
 module.exports.insertSingle = (data, callback) => {
     const SQL = `
         INSERT INTO UserCompletion (user_id, gym_id, details, first_clear, coins_awarded)
-        VALUES (?, ?, ?, ?, ?);
+        VALUES (?, ?, ?, ?, ?)
+        RETURNING completion_id;
     `;
     pool.query(
         SQL,
@@ -13,9 +14,9 @@ module.exports.insertSingle = (data, callback) => {
     );
 };
 
-// Award coins to user (updates User table balance)
+// Award coins to user (updates Users table balance)
 module.exports.awardCoins = (data, callback) => {
-    const SQL = `UPDATE User SET coins = coins + ? WHERE user_id = ?;`;
+    const SQL = `UPDATE Users SET coins = coins + ? WHERE user_id = ?;`;
     pool.query(SQL, [data.coins, data.user_id], callback);
 };
 
@@ -39,15 +40,15 @@ module.exports.selectByUserAndGym = (data, callback) => {
     pool.query(SQL, [data.user_id, data.gym_id], callback);
 };
 
-// Check amulet coin count directly from User table
+// Check amulet coin count directly from Users table
 module.exports.getAmuletCount = (user_id, callback) => {
-    const SQL = `SELECT amulet_coins FROM User WHERE user_id = ?;`;
+    const SQL = `SELECT amulet_coins FROM Users WHERE user_id = ?;`;
     pool.query(SQL, [user_id], callback);
 };
 
 // Award amulet coin (increment by 1)
 module.exports.awardAmuletCoin = (user_id, callback) => {
-    const SQL = `UPDATE User SET amulet_coins = amulet_coins + 1 WHERE user_id = ?;`;
+    const SQL = `UPDATE Users SET amulet_coins = amulet_coins + 1 WHERE user_id = ?;`;
     pool.query(SQL, [user_id], callback);
 };
 

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////
 // REQUIRE DOTENV MODULE
 //////////////////////////////////////////////////////
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 //////////////////////////////////////////////////////
 // REQUIRE JWT MODULE
@@ -12,8 +12,15 @@ const jwt = require("jsonwebtoken");
 // SET JWT CONFIGURATION
 //////////////////////////////////////////////////////
 const secretKey = process.env.JWT_SECRET_KEY;
-const tokenDuration = process.env.JWT_EXPIRES_IN;
-const tokenAlgorithm = process.env.JWT_ALGORITHM;
+const tokenDuration = process.env.JWT_EXPIRES_IN || "30m";
+const tokenAlgorithm = process.env.JWT_ALGORITHM || "HS256";
+
+// Accounts allowed to change game data (gyms, badges, Pokémon), e.g. ADMIN_USER_IDS=1,2.
+// Nobody is an admin when it is not set.
+const adminIds = (process.env.ADMIN_USER_IDS || "")
+  .split(",")
+  .map(id => parseInt(id))
+  .filter(Number.isInteger);
 
 //////////////////////////////////////////////////////
 // MIDDLEWARE FUNCTION FOR GENERATING JWT TOKEN
@@ -58,6 +65,17 @@ module.exports.verifyOwner = (req, res, next) => {
   const requestedId = req.params.user_id ?? req.body.user_id;
   if (parseInt(requestedId) !== res.locals.userId) {
     return res.status(403).json({ message: "Forbidden: Not your account" });
+  }
+  next();
+};
+
+//////////////////////////////////////////////////////
+// MIDDLEWARE FUNCTION FOR CHECKING ADMIN ACCOUNTS
+// (run after verifyToken; guards routes that change shared game data)
+//////////////////////////////////////////////////////
+module.exports.verifyAdmin = (req, res, next) => {
+  if (!adminIds.includes(res.locals.userId)) {
+    return res.status(403).json({ message: "Forbidden: Admins only" });
   }
   next();
 };

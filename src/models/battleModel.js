@@ -5,7 +5,8 @@ const db = pool.promise();
 module.exports.createBattle = async (user_id, gym_id, state) => {
   const SQL = `
     INSERT INTO Battles (user_id, gym_id, state, result)
-    VALUES (?, ?, ?, NULL);
+    VALUES (?, ?, ?, NULL)
+    RETURNING battle_id;
   `;
   const [results] = await db.query(SQL, [user_id, gym_id, JSON.stringify(state)]);
   return results.insertId;
@@ -81,8 +82,8 @@ module.exports.getPokemonByIds = async (ids) => {
 module.exports.getRecord = async (user_id) => {
   const SQL = `
     SELECT
-      SUM(result = 'win') AS wins,
-      SUM(result = 'lose') AS losses
+      COUNT(*) FILTER (WHERE result = 'win') AS wins,
+      COUNT(*) FILTER (WHERE result = 'lose') AS losses
     FROM Battles
     WHERE user_id = ?;
   `;
