@@ -221,12 +221,13 @@ describe("gym rewards", () => {
       body: { user_id: trainer.userId, battle_id: battleId },
     });
 
+  // INSERT ... RETURNING comes back as { insertId } (see services/db.js)
   const recordBattle = async (userId, result) => {
-    const [row] = await sql(
+    const inserted = await sql(
       "INSERT INTO Battles (user_id, gym_id, state, result) VALUES (?, 1, '{}'::jsonb, ?) RETURNING battle_id",
       [userId, result],
     );
-    return row.battle_id;
+    return inserted.insertId;
   };
 
   it("pays nothing without a won battle", async () => {
