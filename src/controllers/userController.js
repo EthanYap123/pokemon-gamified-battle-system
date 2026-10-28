@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const userModel = require("../models/userModel.js");
 const battleModel = require("../models/battleModel.js");
@@ -300,6 +301,39 @@ module.exports.register = (req, res, next) => {
     console.error("Error register: ", error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+// Demo trainer (no sign-up): a fresh account with a random password nobody
+// knows, so the only way in is the token sent back here.
+const DEMO_STARTING_COINS = 500;
+
+module.exports.createDemoUser = (req, res, next) => {
+  const suffix = crypto.randomBytes(3).toString("hex");
+  const password = crypto.randomBytes(24).toString("hex");
+
+  bcrypt.hash(password, SALT_ROUNDS, (hashError, hash) => {
+    if (hashError) {
+      console.error("Error hashing demo password:", hashError);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    const data = {
+      username: `demo-${suffix}`,
+      email: `demo-${suffix}@demo.invalid`,
+      password: hash,
+      coins: DEMO_STARTING_COINS
+    };
+
+    userModel.createDemo(data, (error, results) => {
+      if (error) {
+        console.error("Error createDemoUser:", error);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+      res.locals.userId = results.insertId;
+      res.locals.message = `Welcome, ${data.username}! This is a demo account with ${DEMO_STARTING_COINS} coins.`;
+      next();
+    });
+  });
 };
 
 // Authenticate User

@@ -156,3 +156,15 @@ module.exports.register = (data, callback) => {
   const VALUES = [data.username, data.email, data.password];
   pool.query(SQLSTATEMENT, VALUES, callback);
 };
+// Demo trainer: a throwaway account with some starting coins, so visitors can
+// try the game without signing up. Every visitor gets their own, so nobody can
+// spoil the demo for anyone else.
+module.exports.createDemo = (data, callback) => {
+  const SQLSTATEMENT = `
+    INSERT INTO Users (username, email, password, coins)
+    VALUES (?, ?, ?, ?)
+    RETURNING user_id;
+  `;
+  const VALUES = [data.username, data.email, data.password, data.coins];
+  pool.query(SQLSTATEMENT, VALUES, callback);
+};

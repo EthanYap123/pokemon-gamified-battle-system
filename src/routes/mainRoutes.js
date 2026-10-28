@@ -53,4 +53,14 @@ router.post(
   jwtMiddleware.sendToken                   // send token back
 );
 
+// Demo trainer, so visitors can play without signing up (public)
+router.post(
+  "/demo",
+  rateLimit.registerPerVisitor,             // shares the sign-up limits
+  rateLimit.registerTotal,
+  userController.createDemoUser,            // throwaway account with starting coins
+  jwtMiddleware.generateToken,
+  jwtMiddleware.sendToken
+);
+
 module.exports = router;

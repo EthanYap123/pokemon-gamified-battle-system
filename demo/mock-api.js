@@ -247,6 +247,14 @@
             });
             return [200, { message: undefined, token: newToken(db, user.user_id), userId: user.user_id }];
         }],
+        ["POST", /^\/api\/demo$/, async (db) => {
+            const suffix = Math.random().toString(16).slice(2, 8);
+            const user = insert(db, "User", {
+                username: `demo-${suffix}`, email: `demo-${suffix}@demo.invalid`, password: await sha256(String(Math.random())),
+                coins: 500, amulet_coins: 0, pity_count: 0, last_free_pull: null,
+            });
+            return [200, { message: `Welcome, ${user.username}! This is a demo account with 500 coins.`, token: newToken(db, user.user_id), userId: user.user_id }];
+        }],
         ["POST", /^\/api\/login$/, async (db, req) => {
             const { username, password } = req.body;
             if (!username) throw new ApiError(400, "username is undefined or empty");
