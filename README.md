@@ -140,6 +140,11 @@ Because the live app is shared by strangers on free plans, it has a few guards:
 - **Moving databases means more than swapping the driver.** Porting from MySQL to Postgres meant replacing `ON DUPLICATE KEY` with `ON CONFLICT`, `insertId` with `RETURNING`, MySQL variables with `ROW_NUMBER()`, and making usernames case-insensitive myself. It also exposed a shop transaction that waited on a second connection, which could stall a small serverless pool.
 - **Simulate before you balance.** I tuned gym levels by simulating thousands of battles, so any starter can beat the first gym.
 
+## How I used AI
+
+- **Gemini** for ideation.
+- **Claude Code** for help when I got stuck.
+
 ## Author
 
 Ethan Yap ([@EthanYap123](https://github.com/EthanYap123)) · [Portfolio](https://ethanyap123.github.io/portfolio/)
