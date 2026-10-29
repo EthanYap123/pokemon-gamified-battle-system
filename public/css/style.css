@@ -585,6 +585,11 @@ select {
   margin-top: 12px;
 }
 
+/* Keep "sign-up" from breaking at its hyphen on narrow screens */
+.demo-login span {
+  white-space: nowrap;
+}
+
 .auth-switch {
   text-align: center;
   margin: 18px 0 0;
