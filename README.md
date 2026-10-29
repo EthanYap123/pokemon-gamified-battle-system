@@ -2,10 +2,10 @@
 
 A full-stack Pokémon web game: catch Pokémon from a gacha shop, build a team, and fight turn-based battles through eight gyms and Champion Blue. A Node.js and Express REST API over PostgreSQL handles accounts, battles, the shop and progression, with JWT login and bcrypt password hashing.
 
-**Live app:** https://pokemon-gamified-battle-system-eta.vercel.app (real accounts on a shared server; see [Deployment](#deployment))
+**Live app:** https://pokemon-gamified-battle-system-eta.vercel.app (real accounts on a shared server; press **Try the demo** to play instantly with a throwaway trainer and 500 coins, see [Deployment](#deployment))
 **Browser demo:** https://ethanyap123.github.io/pokemon-gamified-battle-system/ (no sign-up needed, progress stays in your browser)
 
-![Node.js](https://img.shields.io/badge/Node.js-Express_5-3c873a) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791) ![Vercel](https://img.shields.io/badge/hosted_on-Vercel-000) ![JWT](https://img.shields.io/badge/auth-JWT_%2B_bcrypt-555) [![Deploy demo](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml/badge.svg)](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml)
+![Node.js](https://img.shields.io/badge/Node.js-Express_5-3c873a) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791) ![Vercel](https://img.shields.io/badge/hosted_on-Vercel-000) ![JWT](https://img.shields.io/badge/auth-JWT_%2B_bcrypt-555) [![CI](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/ci.yml/badge.svg)](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/ci.yml) [![Deploy demo](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml/badge.svg)](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml)
 
 ![Battle screen](docs/battle-screen.jpg)
 
@@ -13,7 +13,7 @@ Built for the Back-End Development (BED) module at Singapore Polytechnic, extend
 
 ## Features
 
-- **Accounts:** register and log in with bcrypt-hashed passwords and JWT tokens. Every player route checks that the token owns the `user_id` it changes.
+- **Accounts:** register and log in with bcrypt-hashed passwords and JWT tokens. Every player route checks that the token owns the `user_id` it changes. A **Try the demo** button creates a separate throwaway trainer for each visitor (`POST /api/demo`, rate-limited like sign-ups), so nobody can spoil a shared demo account.
 - **Battles:** turn-based fights against eight gym leaders and the Champion, with switching, priority moves, critical hits, type effectiveness and PP.
 - **Shop:** Poké, Great and Ultra Balls, 10-pulls, a rare-pity counter, a free daily ball and pull history. Each purchase runs as a single database transaction.
 - **Progression:** badges, coins, Amulet Coin boosts, a Pokédex to complete (finishing it unlocks two hidden Pokémon) and a leaderboard.
@@ -54,7 +54,7 @@ All routes are under `/api`. Player routes need an `Authorization: Bearer <token
 
 | Resource | Examples |
 | --- | --- |
-| `/register`, `/login` | create an account and get a JWT |
+| `/register`, `/login`, `/demo` | create an account (or a throwaway demo trainer) and get a JWT |
 | `/users` | profile, account settings, `GET /leaderboard`, `GET /:user_id/stats` |
 | `/battle` | `POST /start`, `POST /:battle_id/turn` (move or switch), `POST /:battle_id/end`, `GET /:battle_id` |
 | `/shop` | `GET /items`, `POST /:user_id/purchase`, `POST /:user_id/daily`, `GET /:user_id/history` |
@@ -104,6 +104,23 @@ You need Node.js and a PostgreSQL database: a local Postgres server, or a free [
    `init_tables` only creates missing tables and only seeds an empty database, so it is safe to run again. `npm run init_tables -- --reset` wipes everything and starts over.
 4. Open http://localhost:3000.
 
+## Testing
+
+```bash
+DATABASE_URL=postgres://localhost/pokemon_test JWT_SECRET_KEY=dev npm run init_tables -- --reset
+DATABASE_URL=postgres://localhost/pokemon_test JWT_SECRET_KEY=dev npm test
+```
+
+`tests/api.test.js` starts the real Express app and calls it over HTTP against a real Postgres database, using Node's built-in test runner and `fetch` (no extra packages). It checks the rules that matter most:
+
+- **Auth:** sign-up, case-insensitive duplicate names, bcrypt-hashed passwords, wrong-password and forged-token rejection.
+- **Ownership:** one trainer's token can't buy, pick a starter or read a profile on another trainer's account; only admins can change gyms.
+- **Shop transactions:** an unaffordable purchase changes nothing; a purchase charges, records the pull and catches the Pokémon together; 10-pulls get the discount and the uncommon guarantee; the free ball works once a day.
+- **Gym rewards:** no payout without a won battle, never twice for the same win, never for another trainer's win, and gyms must be cleared in order.
+- **Demo trainers:** each visitor gets a separate account, and the endpoint is rate-limited.
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs them on every push and pull request against a fresh Postgres 16 service container.
+
 ## Deployment
 
 **Live app (Vercel + Neon).** `vercel.json` turns the Express app into one serverless function (`api/index.js`) in Singapore (`sin1`). Vercel serves `public/` from its CDN and sends every `/api` request to the function. The database is a free Neon Postgres database connected through Vercel's Storage tab, which sets `DATABASE_URL`. Every deploy runs `npm run init_tables` as its build step, so new tables appear automatically and players keep their progress.
@@ -122,6 +139,11 @@ Because the live app is shared by strangers on free plans, it has a few guards:
 - **Players find exploits fast.** Gym rewards could be claimed more than once. Now rewards need a won, unclaimed battle, and gyms must be beaten in order.
 - **Moving databases means more than swapping the driver.** Porting from MySQL to Postgres meant replacing `ON DUPLICATE KEY` with `ON CONFLICT`, `insertId` with `RETURNING`, MySQL variables with `ROW_NUMBER()`, and making usernames case-insensitive myself. It also exposed a shop transaction that waited on a second connection, which could stall a small serverless pool.
 - **Simulate before you balance.** I tuned gym levels by simulating thousands of battles, so any starter can beat the first gym.
+
+## How I used AI
+
+- **Gemini** for ideation.
+- **Claude Code** for help when I got stuck.
 
 ## Author
 
