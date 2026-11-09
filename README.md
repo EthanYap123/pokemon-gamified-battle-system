@@ -2,7 +2,7 @@
 
 A full-stack Pokémon web game: catch Pokémon from a gacha shop, build a team, and fight turn-based battles through eight gyms and Champion Blue. A Node.js and Express REST API over PostgreSQL handles accounts, battles, the shop and progression, with JWT login and bcrypt password hashing.
 
-**Live app:** https://pokemon-gamified-battle-system-eta.vercel.app (real accounts on a shared server; press **Try the demo** to play instantly with a throwaway trainer and 500 coins, see [Deployment](#deployment))
+**Live app:** https://pokemon-gamified-battle-system-eta.vercel.app (real accounts on a shared server; press **Try the demo** to play instantly with a throwaway trainer and 500 coins, see [CI and deployment](#ci-and-deployment))
 **Browser demo:** https://ethanyap123.github.io/pokemon-gamified-battle-system/ (no sign-up needed, progress stays in your browser)
 
 ![Node.js](https://img.shields.io/badge/Node.js-Express_5-3c873a) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791) ![Vercel](https://img.shields.io/badge/hosted_on-Vercel-000) ![JWT](https://img.shields.io/badge/auth-JWT_%2B_bcrypt-555) [![CI](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/ci.yml/badge.svg)](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/ci.yml) [![Deploy demo](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml/badge.svg)](https://github.com/EthanYap123/pokemon-gamified-battle-system/actions/workflows/deploy.yml)
@@ -48,6 +48,16 @@ Built for the Back-End Development (BED) module at Singapore Polytechnic, extend
 | Front end | HTML, CSS, vanilla JavaScript |
 | Deployment | Vercel serverless function + Neon (live app), GitHub Actions + GitHub Pages (browser demo) |
 
+## Architecture
+
+![Architecture: the browser calls an Express 5 REST API running as a Vercel function, which checks the token, ownership and rate limits and reads and writes PostgreSQL on Neon](docs/architecture.svg)
+
+Every request goes through the same chain before it reaches a controller: `verifyToken` (a valid JWT), then `verifyOwner` (the `user_id` in the URL or body belongs to that token) or `verifyAdmin` (`ADMIN_USER_IDS`), then rate limits stored in Postgres. Controllers call models, which hold the SQL. The battle engine (`src/services/battleEngine.js`) is plain JavaScript with no database access, so the browser demo reuses it as-is.
+
+Each shop purchase runs in one transaction on one connection: the player's row is locked with `SELECT … FOR UPDATE`, then coins, the caught Pokémon and the pull history are written together, and any error rolls all of it back.
+
+The schema (13 tables, including `Users`, `Battles`, `UserPokemon`, `Team`, `PullHistory` and `RateLimit`) lives in [`src/configs/initTables.js`](src/configs/initTables.js). A longer write-up is in the [case study](https://ethanyap123.github.io/portfolio/work/pokemon.html).
+
 ## API
 
 All routes are under `/api`. Player routes need an `Authorization: Bearer <token>` header.
@@ -82,7 +92,7 @@ pokemon-gamified-battle-system/
 └── vercel.json            # Vercel build, routing and region
 ```
 
-## Run it locally
+## Getting started
 
 You need Node.js and a PostgreSQL database: a local Postgres server, or a free [Neon](https://neon.tech) database.
 
@@ -90,7 +100,7 @@ You need Node.js and a PostgreSQL database: a local Postgres server, or a free [
    ```bash
    npm install
    ```
-2. Create a `.env` file:
+2. Copy [`.env.example`](.env.example) to `.env` and fill in at least:
    ```
    DATABASE_URL=postgres://user:password@localhost:5432/pokemon
    JWT_SECRET_KEY=your-secret-key
@@ -121,7 +131,9 @@ DATABASE_URL=postgres://localhost/pokemon_test JWT_SECRET_KEY=dev npm test
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs them on every push and pull request against a fresh Postgres 16 service container.
 
-## Deployment
+## CI and deployment
+
+**CI.** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push to `main` and every pull request: it starts a Postgres 16 service container, creates and seeds a fresh database with `npm run init_tables -- --reset`, and runs the API tests.
 
 **Live app (Vercel + Neon).** `vercel.json` turns the Express app into one serverless function (`api/index.js`) in Singapore (`sin1`). Vercel serves `public/` from its CDN and sends every `/api` request to the function. The database is a free Neon Postgres database connected through Vercel's Storage tab, which sets `DATABASE_URL`. Every deploy runs `npm run init_tables` as its build step, so new tables appear automatically and players keep their progress.
 
@@ -131,6 +143,12 @@ Because the live app is shared by strangers on free plans, it has a few guards:
 - The seed trainers get a random password on Vercel, so nobody can log in as them.
 
 **Browser demo (GitHub Pages).** GitHub Pages only serves static files, so the demo is a browser-only build. `npm run build:demo` copies `public/` into `_site/` and adds `demo/mock-api.js`, which answers the same `/api` routes in the browser using the real battle engine and the starting data from `initTables.js`. Progress is saved in the visitor's browser. `.github/workflows/deploy.yml` builds and publishes it on every push to `main`.
+
+## What I'd improve next
+
+- Move the last ownership checks (profile update and delete, which still check inside `userController`) onto the `verifyOwner` middleware, so every rule lives in one place.
+- Keep the login token in an `httpOnly` cookie instead of `localStorage`, so an injected script couldn't read it.
+- Add unit tests for `battleEngine.js`, which is only covered through the API tests today.
 
 ## What I learned
 
