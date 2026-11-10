@@ -160,8 +160,7 @@ Because the live app is shared by strangers on free plans, it has a few guards:
 
 ## How I used AI
 
-- **Gemini** for ideation.
-- **Claude Code** for help when I got stuck.
+The original BED submission was done without AI tools, as the module required. After the module ended, I used **Gemini** for ideas and **Claude Code** for help when I got stuck while upgrading it.
 
 ## Author
 
